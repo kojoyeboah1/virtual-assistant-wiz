@@ -12,6 +12,7 @@ const CalendarSection = () => (
           time: "2024-02-20T10:00:00",
           type: "meeting",
         },
+        // Add more events as needed
       ]}
     />
   </div>
