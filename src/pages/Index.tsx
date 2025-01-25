@@ -39,9 +39,7 @@ const Index = () => {
   const handleTaskToggle = (taskId: string) => {
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === taskId
-          ? { ...task, completed: !task.completed }
-          : task
+        task.id === taskId ? { ...task, completed: !task.completed } : task
       )
     );
   };
@@ -54,33 +52,35 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-accent p-6">
-      <div className="max-w-7xl mx-auto space-y-8 fade-in">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-2">Virtual Secretary</h1>
-          <p className="text-muted-foreground">Your personal task assistant</p>
+    <div className="min-h-screen bg-gradient-to-b from-background to-accent p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 fade-in">
+        <header className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Virtual Secretary</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Your personal task assistant</p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Tasks</h2>
-              <Button size="sm">
+              <h2 className="text-lg sm:text-xl font-semibold">Tasks</h2>
+              <Button size="sm" className="whitespace-nowrap">
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Add Task
               </Button>
             </div>
-            {tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                {...task}
-                onClick={() => handleTaskToggle(task.id)}
-              />
-            ))}
+            <div className="space-y-3">
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  {...task}
+                  onClick={() => handleTaskToggle(task.id)}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold mb-4">Calendar</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Calendar</h2>
             <Calendar
               date={new Date()}
               events={[
@@ -94,8 +94,8 @@ const Index = () => {
             />
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold mb-4">Quick Notes</h2>
+          <div className="space-y-4 md:col-span-2 lg:col-span-1">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Quick Notes</h2>
             <QuickNote onSave={handleNoteSave} />
           </div>
         </div>
