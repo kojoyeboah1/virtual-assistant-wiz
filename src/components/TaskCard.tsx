@@ -1,13 +1,15 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, CheckCircle2Icon } from "lucide-react";
+import { CalendarIcon, CheckCircle2Icon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LocationMap } from "./LocationMap";
 
 interface TaskCardProps {
   title: string;
   description: string;
   priority: "low" | "medium" | "high";
   dueDate: string;
+  location?: { lat: number; lng: number };
   completed?: boolean;
   onClick?: () => void;
 }
@@ -17,6 +19,7 @@ export const TaskCard = ({
   description,
   priority,
   dueDate,
+  location,
   completed = false,
   onClick,
 }: TaskCardProps) => {
@@ -52,9 +55,20 @@ export const TaskCard = ({
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">{description}</p>
-        <div className="mt-4 flex items-center text-sm text-muted-foreground">
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          <span>{dueDate}</span>
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            <span>{dueDate}</span>
+          </div>
+          {location && (
+            <div className="space-y-2">
+              <div className="flex items-center text-sm text-muted-foreground">
+                <MapPinIcon className="mr-2 h-4 w-4" />
+                <span>Location attached</span>
+              </div>
+              <LocationMap location={location} readonly className="mt-2" />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

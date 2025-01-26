@@ -4,16 +4,27 @@ import Header from "@/components/Header";
 import TabsSection from "@/components/TabsSection";
 import MainNav from "@/components/NavigationMenu";
 
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  priority: "low" | "medium" | "high";
+  dueDate: string;
+  location?: { lat: number; lng: number };
+  completed: boolean;
+}
+
 const Index = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [tasks, setTasks] = useState([
+  const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
       title: "Review Project Proposal",
       description: "Go through the latest project proposal and provide feedback",
       priority: "high",
       dueDate: "2024-02-20",
+      location: { lat: 40.7128, lng: -74.0060 },
       completed: false,
     },
     {
