@@ -35,7 +35,7 @@ export const LocationMap = ({
   }, [onLocationSelect, readonly]);
 
   return (
-    <LoadScript googleMapsApiKey={process.env.GOOGLE_MAPS_API_KEY || ''}>
+    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}>
       <GoogleMap
         mapContainerClassName={`w-full h-[200px] rounded-lg ${className}`}
         center={location || defaultCenter}
