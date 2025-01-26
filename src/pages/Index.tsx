@@ -45,6 +45,25 @@ const Index = () => {
     );
   };
 
+  const handleTaskCreate = (newTask: Omit<Task, "id" | "completed">) => {
+    const task: Task = {
+      ...newTask,
+      id: Date.now().toString(),
+      completed: false,
+    };
+    setTasks((prev) => [...prev, task]);
+  };
+
+  const handleTaskEdit = (taskId: string, updatedTask: Omit<Task, "id" | "completed">) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId
+          ? { ...task, ...updatedTask }
+          : task
+      )
+    );
+  };
+
   const handleNoteSave = (note: string) => {
     toast({
       title: "Note saved",
@@ -64,6 +83,8 @@ const Index = () => {
         <TabsSection
           tasks={tasks}
           onTaskToggle={handleTaskToggle}
+          onTaskCreate={handleTaskCreate}
+          onTaskEdit={handleTaskEdit}
           onNoteSave={handleNoteSave}
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}

@@ -6,6 +6,8 @@ import NotesSection from "./NotesSection";
 interface TabsSectionProps {
   tasks: any[];
   onTaskToggle: (taskId: string) => void;
+  onTaskCreate: (task: any) => void;
+  onTaskEdit: (taskId: string, task: any) => void;
   onNoteSave: (note: string) => void;
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
@@ -13,7 +15,9 @@ interface TabsSectionProps {
 
 const TabsSection = ({ 
   tasks, 
-  onTaskToggle, 
+  onTaskToggle,
+  onTaskCreate,
+  onTaskEdit,
   onNoteSave,
   selectedDate,
   onDateSelect,
@@ -31,7 +35,9 @@ const TabsSection = ({
             !selectedDate || 
             new Date(task.dueDate).toDateString() === selectedDate.toDateString()
           )} 
-          onTaskToggle={onTaskToggle} 
+          onTaskToggle={onTaskToggle}
+          onTaskCreate={onTaskCreate}
+          onTaskEdit={onTaskEdit}
         />
       </TabsContent>
       <TabsContent value="calendar" className="space-y-4">
