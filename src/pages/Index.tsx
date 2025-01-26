@@ -6,6 +6,7 @@ import MainNav from "@/components/NavigationMenu";
 
 const Index = () => {
   const { toast } = useToast();
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [tasks, setTasks] = useState([
     {
       id: "1",
@@ -40,6 +41,10 @@ const Index = () => {
     });
   };
 
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-accent p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 fade-in">
@@ -49,6 +54,8 @@ const Index = () => {
           tasks={tasks}
           onTaskToggle={handleTaskToggle}
           onNoteSave={handleNoteSave}
+          selectedDate={selectedDate}
+          onDateSelect={handleDateSelect}
         />
       </div>
     </div>

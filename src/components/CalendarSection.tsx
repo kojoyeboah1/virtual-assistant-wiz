@@ -1,6 +1,12 @@
 import { Calendar } from "@/components/Calendar";
 
-const CalendarSection = () => (
+interface CalendarSectionProps {
+  tasks: any[];
+  selectedDate: Date | null;
+  onDateSelect: (date: Date) => void;
+}
+
+const CalendarSection = ({ tasks, selectedDate, onDateSelect }: CalendarSectionProps) => (
   <div className="space-y-4">
     <h2 className="text-lg sm:text-xl font-semibold mb-4">Calendar</h2>
     <Calendar
@@ -12,8 +18,10 @@ const CalendarSection = () => (
           time: "2024-02-20T10:00:00",
           type: "meeting",
         },
-        // Add more events as needed
       ]}
+      tasks={tasks}
+      selectedDate={selectedDate}
+      onDateSelect={onDateSelect}
     />
   </div>
 );
