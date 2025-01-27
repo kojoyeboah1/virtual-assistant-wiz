@@ -18,6 +18,18 @@ const CalendarSection = ({ tasks, selectedDate, onDateSelect }: CalendarSectionP
           time: "2024-02-20T10:00:00",
           type: "meeting",
         },
+        {
+          id: "2",
+          title: "Project Review",
+          time: "2024-02-22T14:00:00",
+          type: "meeting",
+        },
+        {
+          id: "3",
+          title: "Weekly Sync",
+          time: "2024-02-26T11:00:00",
+          type: "meeting",
+        },
       ]}
       tasks={tasks}
       selectedDate={selectedDate}

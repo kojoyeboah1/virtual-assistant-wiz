@@ -7,7 +7,6 @@ import {
   isSameDay,
   addMonths,
   subMonths,
-  parseISO,
 } from "date-fns";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarDay } from "./calendar/CalendarDay";
@@ -40,6 +39,11 @@ const HOLIDAYS = [
   { date: "2024-01-01", title: "New Year's Day" },
   { date: "2024-12-25", title: "Christmas" },
   { date: "2024-07-04", title: "Independence Day" },
+  { date: "2024-01-15", title: "Martin Luther King Jr. Day" },
+  { date: "2024-02-19", title: "Presidents' Day" },
+  { date: "2024-05-27", title: "Memorial Day" },
+  { date: "2024-09-02", title: "Labor Day" },
+  { date: "2024-11-28", title: "Thanksgiving" },
 ];
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
