@@ -5,6 +5,7 @@ import TabsSection from "@/components/TabsSection";
 import MainNav from "@/components/NavigationMenu";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 interface Task {
   id: string;
@@ -20,17 +21,53 @@ const Index = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+      setUserId(user.id);
+    };
+
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+      setUserId(session.user.id);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   // Fetch tasks from Supabase
   const { data: tasks = [], isLoading } = useQuery({
-    queryKey: ['tasks'],
+    queryKey: ['tasks', userId],
     queryFn: async () => {
+      if (!userId) return [];
+
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
+        .eq('user_id', userId)
         .order('due_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error fetching tasks",
+          description: error.message,
+          variant: "destructive",
+        });
+        return [];
+      }
 
       return data.map(task => ({
         id: task.id,
@@ -44,11 +81,14 @@ const Index = () => {
         completed: task.completed || false,
       }));
     },
+    enabled: !!userId,
   });
 
   // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: async (newTask: Omit<Task, "id" | "completed">) => {
+      if (!userId) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from('tasks')
         .insert([{
@@ -58,7 +98,7 @@ const Index = () => {
           due_date: newTask.dueDate,
           location_lat: newTask.location?.lat,
           location_lng: newTask.location?.lng,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: userId,
         }])
         .select()
         .single();
@@ -73,11 +113,20 @@ const Index = () => {
         description: "Task created successfully",
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error creating task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   });
 
   // Update task mutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, task }: { taskId: string; task: Omit<Task, "id" | "completed"> }) => {
+      if (!userId) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from('tasks')
         .update({
@@ -89,6 +138,7 @@ const Index = () => {
           location_lng: task.location?.lng,
         })
         .eq('id', taskId)
+        .eq('user_id', userId)
         .select()
         .single();
 
@@ -102,11 +152,20 @@ const Index = () => {
         description: "Task updated successfully",
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   });
 
   // Toggle task completion mutation
   const toggleTaskMutation = useMutation({
     mutationFn: async (taskId: string) => {
+      if (!userId) throw new Error("User not authenticated");
+
       const task = tasks.find(t => t.id === taskId);
       if (!task) throw new Error('Task not found');
 
@@ -114,6 +173,7 @@ const Index = () => {
         .from('tasks')
         .update({ completed: !task.completed })
         .eq('id', taskId)
+        .eq('user_id', userId)
         .select()
         .single();
 
@@ -123,6 +183,13 @@ const Index = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error toggling task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   });
 
   const handleTaskToggle = (taskId: string) => {
