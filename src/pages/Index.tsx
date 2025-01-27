@@ -35,13 +35,13 @@ const Index = () => {
       return data.map(task => ({
         id: task.id,
         title: task.title,
-        description: task.description,
-        priority: task.priority,
+        description: task.description || "",
+        priority: task.priority as "low" | "medium" | "high",
         dueDate: task.due_date,
         location: task.location_lat && task.location_lng 
           ? { lat: task.location_lat, lng: task.location_lng }
           : undefined,
-        completed: task.completed,
+        completed: task.completed || false,
       }));
     },
   });
@@ -58,6 +58,7 @@ const Index = () => {
           due_date: newTask.dueDate,
           location_lat: newTask.location?.lat,
           location_lng: newTask.location?.lng,
+          user_id: (await supabase.auth.getUser()).data.user?.id,
         }])
         .select()
         .single();
