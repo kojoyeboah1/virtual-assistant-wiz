@@ -2,14 +2,43 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { UserCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 const MainNav = () => {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthClick = async () => {
+    if (isAuthenticated) {
+      await supabase.auth.signOut();
+      navigate('/auth');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="flex justify-between items-center w-full mb-6">
       <NavigationMenu>
@@ -43,9 +72,9 @@ const MainNav = () => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      <Button variant="ghost" className="gap-2">
+      <Button variant="ghost" className="gap-2" onClick={handleAuthClick}>
         <UserCircle className="h-5 w-5" />
-        Sign In
+        {isAuthenticated ? 'Sign Out' : 'Sign In'}
       </Button>
     </div>
   );
