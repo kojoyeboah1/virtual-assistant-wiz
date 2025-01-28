@@ -1,7 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+// Follow this setup guide to integrate the Deno runtime into your application:
+// https://docs.google.com/document/d/1AlzxfTr5lrB_7E8utKB4GtSxLVXGYY2jtZTcp_oaowU/edit#heading=h.z84gh8sclah3
 
-serve(async (req) => {
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -11,36 +16,32 @@ serve(async (req) => {
     const { secretName } = await req.json();
     console.log('Requested secret:', secretName);
 
-    // Get the secret directly from environment variables
+    // Get the secret value from environment variables
     const secretValue = Deno.env.get(secretName);
-    
     if (!secretValue) {
-      console.error(`Secret ${secretName} not found`);
+      console.error(`Secret ${secretName} not found in environment variables`);
       throw new Error(`Secret ${secretName} not found`);
     }
 
-    console.log('Successfully retrieved secret');
-    
     return new Response(
-      JSON.stringify({ 
-        data: secretValue 
+      JSON.stringify({
+        data: secretValue,
       }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-      }
+      },
     );
   } catch (error) {
     console.error('Error in get-secret function:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
-        details: 'Error retrieving secret'
       }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
+        status: 400,
+      },
     );
   }
 });
