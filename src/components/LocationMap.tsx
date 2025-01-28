@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LocationMapProps {
   location?: { lat: number; lng: number };
@@ -18,9 +19,30 @@ export const LocationMap = ({
   readonly = false 
 }: LocationMapProps) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [apiKey, setApiKey] = useState<string>("");
   const { toast } = useToast();
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      const { data: { GOOGLE_MAPS_API_KEY }, error } = await supabase.functions.invoke('get-secret', {
+        body: { secretName: 'GOOGLE_MAPS_API_KEY' }
+      });
+      
+      if (error || !GOOGLE_MAPS_API_KEY) {
+        toast({
+          title: "Error loading map",
+          description: "Could not load Google Maps API key",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setApiKey(GOOGLE_MAPS_API_KEY);
+    };
+
+    fetchApiKey();
+  }, [toast]);
+
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
   }, []);
@@ -40,7 +62,7 @@ export const LocationMap = ({
   if (!apiKey) {
     return (
       <div className={`w-full h-[200px] rounded-lg bg-muted flex items-center justify-center ${className}`}>
-        <p className="text-muted-foreground text-sm">Google Maps API key not configured</p>
+        <p className="text-muted-foreground text-sm">Loading map...</p>
       </div>
     );
   }
