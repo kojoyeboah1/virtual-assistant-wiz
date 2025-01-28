@@ -28,14 +28,16 @@ serve(async (req) => {
 
     if (error) throw error
 
+    // Return just the value directly
     return new Response(
-      JSON.stringify({ [secretName]: data.value }),
+      JSON.stringify({ data: data.value }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
   } catch (error) {
+    console.error('Error fetching secret:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

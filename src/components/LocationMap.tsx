@@ -24,20 +24,30 @@ export const LocationMap = ({
   
   useEffect(() => {
     const fetchApiKey = async () => {
-      const { data: { GOOGLE_MAPS_API_KEY }, error } = await supabase.functions.invoke('get-secret', {
-        body: { secretName: 'GOOGLE_MAPS_API_KEY' }
-      });
-      
-      if (error || !GOOGLE_MAPS_API_KEY) {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-secret', {
+          body: { secretName: 'GOOGLE_MAPS_API_KEY' }
+        });
+        
+        if (error || !data) {
+          console.error('Error fetching API key:', error);
+          toast({
+            title: "Error loading map",
+            description: "Could not load Google Maps API key",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        setApiKey(data);
+      } catch (err) {
+        console.error('Error in fetchApiKey:', err);
         toast({
           title: "Error loading map",
           description: "Could not load Google Maps API key",
           variant: "destructive",
         });
-        return;
       }
-      
-      setApiKey(GOOGLE_MAPS_API_KEY);
     };
 
     fetchApiKey();
