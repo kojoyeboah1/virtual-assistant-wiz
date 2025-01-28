@@ -7,14 +7,15 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const { secretName } = await req.json()
+    console.log('Fetching secret:', secretName) // Debug log
     
-    // Create a Supabase client with the service role key
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -26,9 +27,17 @@ serve(async (req) => {
       .eq('name', secretName)
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Database error:', error) // Debug log
+      throw error
+    }
 
-    // Return just the value directly
+    if (!data?.value) {
+      console.error('No value found for secret:', secretName) // Debug log
+      throw new Error(`No value found for secret: ${secretName}`)
+    }
+
+    console.log('Successfully fetched secret') // Debug log
     return new Response(
       JSON.stringify({ data: data.value }),
       {
@@ -37,9 +46,12 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error fetching secret:', error);
+    console.error('Error in get-secret function:', error) // Debug log
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Error fetching secret from database'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
