@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker, Status } from "@react-google-maps/api";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,8 +12,8 @@ interface LocationMapProps {
   location?: Location;
   onLocationSelect?: (location: Location) => void;
   isEditable?: boolean;
-  className?: string; // Added className prop
-  readonly?: boolean; // Added readonly prop
+  className?: string;
+  readonly?: boolean;
 }
 
 export const LocationMap = ({ 
@@ -24,6 +24,8 @@ export const LocationMap = ({
   readonly 
 }: LocationMapProps) => {
   const [apiKey, setApiKey] = useState<string>("");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export const LocationMap = ({
         
         if (error) {
           console.error('Supabase function error:', error);
+          setLoadError("Could not load Google Maps API key");
           toast({
             title: "Error loading map",
             description: "Could not load Google Maps API key",
@@ -46,6 +49,7 @@ export const LocationMap = ({
 
         if (!data) {
           console.error('No API key returned from function');
+          setLoadError("Could not load Google Maps API key");
           toast({
             title: "Error loading map",
             description: "Could not load Google Maps API key",
@@ -58,6 +62,7 @@ export const LocationMap = ({
         setApiKey(data.data);
       } catch (err) {
         console.error('Error in fetchApiKey:', err);
+        setLoadError("Could not load Google Maps API key");
         toast({
           title: "Error loading map",
           description: "Could not load Google Maps API key",
@@ -85,12 +90,33 @@ export const LocationMap = ({
     onLocationSelect(newLocation);
   };
 
+  const handleLoad = () => {
+    setIsLoaded(true);
+  };
+
+  const handleError = () => {
+    setLoadError("Failed to load Google Maps");
+    toast({
+      title: "Error loading map",
+      description: "Failed to load Google Maps",
+      variant: "destructive",
+    });
+  };
+
+  if (loadError) {
+    return <div className="p-4 text-red-500">Error loading map: {loadError}</div>;
+  }
+
   if (!apiKey) {
-    return <div>Loading map...</div>;
+    return <div className="p-4">Loading map...</div>;
   }
 
   return (
-    <LoadScript googleMapsApiKey={apiKey}>
+    <LoadScript 
+      googleMapsApiKey={apiKey}
+      onLoad={handleLoad}
+      onError={handleError}
+    >
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "400px" }}
         center={defaultCenter}
