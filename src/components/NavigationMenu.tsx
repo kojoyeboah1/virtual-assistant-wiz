@@ -11,6 +11,7 @@ import { UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 const MainNav = () => {
   const navigate = useNavigate();
@@ -73,10 +74,13 @@ const MainNav = () => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      <Button variant="ghost" className="gap-2" onClick={handleAuthClick}>
-        <UserCircle className="h-5 w-5" />
-        {isAuthenticated ? 'Sign Out' : 'Sign In'}
-      </Button>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <Button variant="ghost" className="gap-2" onClick={handleAuthClick}>
+          <UserCircle className="h-5 w-5" />
+          {isAuthenticated ? 'Sign Out' : 'Sign In'}
+        </Button>
+      </div>
     </div>
   );
 };
