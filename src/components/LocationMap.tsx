@@ -12,9 +12,17 @@ interface LocationMapProps {
   location?: Location;
   onLocationSelect?: (location: Location) => void;
   isEditable?: boolean;
+  className?: string; // Added className prop
+  readonly?: boolean; // Added readonly prop
 }
 
-const LocationMap = ({ location, onLocationSelect, isEditable = false }: LocationMapProps) => {
+export const LocationMap = ({ 
+  location, 
+  onLocationSelect, 
+  isEditable = false,
+  className,
+  readonly 
+}: LocationMapProps) => {
   const [apiKey, setApiKey] = useState<string>("");
   const { toast } = useToast();
 
@@ -47,7 +55,7 @@ const LocationMap = ({ location, onLocationSelect, isEditable = false }: Locatio
         }
 
         console.log('Successfully fetched API key');
-        setApiKey(data.data); // Access the key from data.data
+        setApiKey(data.data);
       } catch (err) {
         console.error('Error in fetchApiKey:', err);
         toast({
@@ -88,6 +96,10 @@ const LocationMap = ({ location, onLocationSelect, isEditable = false }: Locatio
         center={defaultCenter}
         zoom={13}
         onClick={handleMapClick}
+        options={{ 
+          disableDefaultUI: readonly,
+          draggable: !readonly
+        }}
       >
         {location && <Marker position={location} />}
       </GoogleMap>
