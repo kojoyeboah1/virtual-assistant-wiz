@@ -14,43 +14,30 @@ serve(async (req) => {
 
   try {
     const { secretName } = await req.json()
-    console.log('Fetching secret:', secretName) // Debug log
+    console.log('Requested secret:', secretName)
+
+    // Get the secret directly from environment variables
+    const secretValue = Deno.env.get(secretName)
     
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    const { data, error } = await supabaseClient
-      .from('secrets')
-      .select('value')
-      .eq('name', secretName)
-      .single()
-
-    if (error) {
-      console.error('Database error:', error) // Debug log
-      throw error
+    if (!secretValue) {
+      console.error(`Secret ${secretName} not found`)
+      throw new Error(`Secret ${secretName} not found`)
     }
 
-    if (!data?.value) {
-      console.error('No value found for secret:', secretName) // Debug log
-      throw new Error(`No value found for secret: ${secretName}`)
-    }
-
-    console.log('Successfully fetched secret') // Debug log
+    console.log('Successfully retrieved secret')
     return new Response(
-      JSON.stringify({ data: data.value }),
+      JSON.stringify(secretValue),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
   } catch (error) {
-    console.error('Error in get-secret function:', error) // Debug log
+    console.error('Error in get-secret function:', error)
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: 'Error fetching secret from database'
+        details: 'Error retrieving secret'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
