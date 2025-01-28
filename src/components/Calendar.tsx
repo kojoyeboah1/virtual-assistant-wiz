@@ -37,13 +37,53 @@ interface CalendarProps {
 
 const HOLIDAYS = [
   { date: "2024-01-01", title: "New Year's Day" },
-  { date: "2024-12-25", title: "Christmas" },
-  { date: "2024-07-04", title: "Independence Day" },
   { date: "2024-01-15", title: "Martin Luther King Jr. Day" },
+  { date: "2024-02-14", title: "Valentine's Day" },
   { date: "2024-02-19", title: "Presidents' Day" },
+  { date: "2024-03-17", title: "St. Patrick's Day" },
+  { date: "2024-04-01", title: "April Fool's Day" },
   { date: "2024-05-27", title: "Memorial Day" },
+  { date: "2024-06-19", title: "Juneteenth" },
+  { date: "2024-07-04", title: "Independence Day" },
   { date: "2024-09-02", title: "Labor Day" },
+  { date: "2024-10-31", title: "Halloween" },
+  { date: "2024-11-11", title: "Veterans Day" },
   { date: "2024-11-28", title: "Thanksgiving" },
+  { date: "2024-12-25", title: "Christmas" },
+  { date: "2024-12-31", title: "New Year's Eve" },
+];
+
+const DEFAULT_EVENTS = [
+  {
+    id: "default-1",
+    title: "Team Meeting",
+    time: "2024-02-20T10:00:00",
+    type: "meeting" as const,
+  },
+  {
+    id: "default-2",
+    title: "Project Review",
+    time: "2024-02-22T14:00:00",
+    type: "meeting" as const,
+  },
+  {
+    id: "default-3",
+    title: "Weekly Sync",
+    time: "2024-02-26T11:00:00",
+    type: "meeting" as const,
+  },
+  {
+    id: "default-4",
+    title: "Monthly Planning",
+    time: "2024-03-01T09:00:00",
+    type: "meeting" as const,
+  },
+  {
+    id: "default-5",
+    title: "Quarterly Review",
+    time: "2024-03-15T13:00:00",
+    type: "meeting" as const,
+  },
 ];
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -62,6 +102,7 @@ export const Calendar = ({
 
   const allEvents = [
     ...userEvents,
+    ...DEFAULT_EVENTS,
     ...HOLIDAYS.map((holiday) => ({
       id: `holiday-${holiday.date}`,
       title: holiday.title,
