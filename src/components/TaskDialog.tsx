@@ -35,17 +35,19 @@ export const TaskDialog = ({
 }: TaskDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-[90vh] z-50">
         <DialogHeader>
           <DialogTitle>{mode === "create" ? "Create Task" : "Edit Task"}</DialogTitle>
         </DialogHeader>
-        <TaskForm
-          onSubmit={(values) => {
-            onSubmit(values);
-            onOpenChange(false);
-          }}
-          initialValues={initialValues}
-        />
+        <div className="pb-6">
+          <TaskForm
+            onSubmit={(values) => {
+              onSubmit(values);
+              onOpenChange(false);
+            }}
+            initialValues={initialValues}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
