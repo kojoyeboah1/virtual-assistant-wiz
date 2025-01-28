@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LocationMap } from "./LocationMap";
+import LocationMap from "./LocationMap";
 
 interface TaskFormProps {
   onSubmit: (task: {

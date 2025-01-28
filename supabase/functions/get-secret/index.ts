@@ -1,9 +1,9 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { corsHeaders } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -19,8 +19,12 @@ Deno.serve(async (req) => {
     }
 
     console.log('Successfully retrieved secret')
+    
+    // Return the secret in the expected format
     return new Response(
-      JSON.stringify({ data: secretValue }), // Return in expected format
+      JSON.stringify({ 
+        data: secretValue 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
