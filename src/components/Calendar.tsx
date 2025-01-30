@@ -10,6 +10,8 @@ import {
 } from "date-fns";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarDay } from "./calendar/CalendarDay";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 interface CalendarEvent {
   id: string;
@@ -95,6 +97,7 @@ export const Calendar = ({
   selectedDate,
 }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -140,15 +143,33 @@ export const Calendar = ({
             );
 
             return (
-              <CalendarDay
-                key={i}
-                day={day}
-                events={dayEvents}
-                currentDate={currentDate}
-                isSelected={!!selectedDate && isSameDay(day, selectedDate)}
-                isToday={isSameDay(day, new Date())}
-                onClick={() => onDateSelect(day)}
-              />
+              <Tooltip key={i}>
+                <TooltipTrigger asChild>
+                  <div
+                    onMouseEnter={() => setHoveredDate(day)}
+                    onMouseLeave={() => setHoveredDate(null)}
+                  >
+                    <CalendarDay
+                      day={day}
+                      events={dayEvents}
+                      currentDate={currentDate}
+                      isSelected={!!selectedDate && isSameDay(day, selectedDate)}
+                      isToday={isSameDay(day, new Date())}
+                      onClick={() => onDateSelect(day)}
+                      isHovered={!!hoveredDate && isSameDay(day, hoveredDate)}
+                    />
+                  </div>
+                </TooltipTrigger>
+                {dayEvents.length > 0 && (
+                  <TooltipContent side="right" className="p-2 space-y-1">
+                    {dayEvents.map((event) => (
+                      <div key={event.id} className="text-sm">
+                        {event.title} ({event.type})
+                      </div>
+                    ))}
+                  </TooltipContent>
+                )}
+              </Tooltip>
             );
           })}
         </div>
