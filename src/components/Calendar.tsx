@@ -8,6 +8,7 @@ import {
   addMonths,
   subMonths,
   getYear,
+  format,
 } from "date-fns";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarDay } from "./calendar/CalendarDay";
