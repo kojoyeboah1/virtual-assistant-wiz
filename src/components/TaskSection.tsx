@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { TaskCard } from "@/components/TaskCard";
@@ -30,6 +30,21 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit }: TaskSect
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"dueDate" | "priority">("dueDate");
+
+  useEffect(() => {
+    const upcomingTasks = tasks.filter(
+      (task) => !task.completed && 
+      new Date(task.dueDate).getTime() - new Date().getTime() <= 3 * 24 * 60 * 60 * 1000
+    );
+
+    if (upcomingTasks.length > 0) {
+      toast({
+        title: "Upcoming tasks",
+        description: `You have ${upcomingTasks.length} tasks due in the next 3 days.`,
+        duration: 5000,
+      });
+    }
+  }, [tasks, toast]);
 
   const handleTaskSubmit = (values: Omit<Task, "id" | "completed">) => {
     if (editingTask) {
@@ -69,19 +84,6 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit }: TaskSect
       const priorityOrder = { high: 0, medium: 1, low: 2 };
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     });
-
-  const upcomingTasks = tasks.filter(
-    (task) => !task.completed && 
-    new Date(task.dueDate).getTime() - new Date().getTime() <= 3 * 24 * 60 * 60 * 1000
-  );
-
-  if (upcomingTasks.length > 0) {
-    toast({
-      title: "Upcoming tasks",
-      description: `You have ${upcomingTasks.length} tasks due in the next 3 days.`,
-      duration: 5000,
-    });
-  }
 
   return (
     <div className="space-y-4">
