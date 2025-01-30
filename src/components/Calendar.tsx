@@ -14,6 +14,8 @@ import { CalendarDay } from "./calendar/CalendarDay";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 import { getEventsForNextYears } from "@/utils/calendarEvents";
+import { TaskDialog } from "./TaskDialog";
+import { useToast } from "@/components/ui/use-toast";
 
 interface CalendarEvent {
   id: string;
@@ -49,6 +51,9 @@ export const Calendar = ({
 }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [selectedTaskDate, setSelectedTaskDate] = useState<Date | null>(null);
+  const { toast } = useToast();
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -77,6 +82,24 @@ export const Calendar = ({
 
   const handlePreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+
+  const handleDayClick = (day: Date) => {
+    const dayEvents = allEvents.filter((event) =>
+      isSameDay(new Date(event.time), day)
+    );
+    
+    setSelectedTaskDate(day);
+    setIsTaskDialogOpen(true);
+    onDateSelect(day);
+
+    if (dayEvents.length > 0) {
+      const eventTitles = dayEvents.map(event => event.title).join(", ");
+      toast({
+        title: format(day, "MMMM d, yyyy"),
+        description: `Events: ${eventTitles}`,
+      });
+    }
+  };
 
   return (
     <Card className="glass-card">
@@ -110,7 +133,7 @@ export const Calendar = ({
                       currentDate={currentDate}
                       isSelected={!!selectedDate && isSameDay(day, selectedDate)}
                       isToday={isSameDay(day, new Date())}
-                      onClick={() => onDateSelect(day)}
+                      onClick={() => handleDayClick(day)}
                       isHovered={!!hoveredDate && isSameDay(day, hoveredDate)}
                     />
                   </div>
@@ -129,6 +152,34 @@ export const Calendar = ({
           })}
         </div>
       </CardContent>
+      <TaskDialog
+        open={isTaskDialogOpen}
+        onOpenChange={setIsTaskDialogOpen}
+        onSubmit={(values) => {
+          // Handle task creation
+          if (selectedTaskDate) {
+            const dayEvents = allEvents.filter((event) =>
+              isSameDay(new Date(event.time), selectedTaskDate)
+            );
+            const eventDescriptions = dayEvents
+              .map((event) => event.title)
+              .join(", ");
+            
+            values.description = eventDescriptions
+              ? `Events on this day: ${eventDescriptions}\n\n${values.description}`
+              : values.description;
+          }
+          setIsTaskDialogOpen(false);
+        }}
+        mode="create"
+        initialValues={
+          selectedTaskDate
+            ? {
+                dueDate: selectedTaskDate.toISOString().split("T")[0],
+              }
+            : undefined
+        }
+      />
     </Card>
   );
 };
