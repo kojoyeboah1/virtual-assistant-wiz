@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface Location {
   lat: number;
@@ -16,6 +16,13 @@ interface LocationMapProps {
   readonly?: boolean;
 }
 
+declare global {
+  interface Window {
+    google: any;
+    initMap: () => void;
+  }
+}
+
 export const LocationMap = ({ 
   location, 
   onLocationSelect, 
@@ -26,6 +33,8 @@ export const LocationMap = ({
   const [apiKey, setApiKey] = useState<string>("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -74,62 +83,103 @@ export const LocationMap = ({
     fetchApiKey();
   }, [toast]);
 
-  const defaultCenter = {
-    lat: location?.lat || 0,
-    lng: location?.lng || 0,
-  };
+  useEffect(() => {
+    if (!apiKey || !window.google || map) return;
 
-  const handleMapClick = (e: google.maps.MapMouseEvent) => {
-    if (!isEditable || !onLocationSelect || !e.latLng) return;
-    
-    const newLocation = {
-      lat: e.latLng.lat(),
-      lng: e.latLng.lng(),
+    const initializeMap = () => {
+      const mapElement = document.getElementById('map');
+      if (!mapElement) return;
+
+      const newMap = new window.google.maps.Map(mapElement, {
+        center: location || { lat: 0, lng: 0 },
+        zoom: 13,
+        disableDefaultUI: readonly,
+        draggable: !readonly,
+      });
+
+      setMap(newMap);
+
+      if (location) {
+        const newMarker = new window.google.maps.Marker({
+          position: location,
+          map: newMap,
+        });
+        setMarker(newMarker);
+      }
+
+      if (isEditable && onLocationSelect) {
+        newMap.addListener('click', (e: google.maps.MapMouseEvent) => {
+          const newLocation = {
+            lat: e.latLng!.lat(),
+            lng: e.latLng!.lng(),
+          };
+          
+          if (marker) {
+            marker.setPosition(newLocation);
+          } else {
+            const newMarker = new window.google.maps.Marker({
+              position: newLocation,
+              map: newMap,
+            });
+            setMarker(newMarker);
+          }
+          
+          onLocationSelect(newLocation);
+        });
+      }
     };
-    
-    onLocationSelect(newLocation);
-  };
 
-  const handleLoad = () => {
-    setIsLoaded(true);
-  };
+    // Load Google Maps script
+    if (!document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        setIsLoaded(true);
+        initializeMap();
+      };
+      script.onerror = () => {
+        setLoadError("Failed to load Google Maps");
+        toast({
+          title: "Error loading map",
+          description: "Failed to load Google Maps",
+          variant: "destructive",
+        });
+      };
+      document.head.appendChild(script);
+    } else {
+      setIsLoaded(true);
+      initializeMap();
+    }
 
-  const handleError = () => {
-    setLoadError("Failed to load Google Maps");
-    toast({
-      title: "Error loading map",
-      description: "Failed to load Google Maps",
-      variant: "destructive",
-    });
-  };
+    return () => {
+      if (marker) {
+        marker.setMap(null);
+      }
+      setMap(null);
+      setMarker(null);
+    };
+  }, [apiKey, location, isEditable, onLocationSelect, readonly, toast]);
 
   if (loadError) {
     return <div className="p-4 text-red-500">Error loading map: {loadError}</div>;
   }
 
-  if (!apiKey) {
-    return <div className="p-4">Loading map...</div>;
+  if (!isLoaded || !apiKey) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <span className="ml-2">Loading map...</span>
+      </div>
+    );
   }
 
   return (
-    <LoadScript 
-      googleMapsApiKey={apiKey}
-      onLoad={handleLoad}
-      onError={handleError}
-    >
-      <GoogleMap
-        mapContainerStyle={{ width: "100%", height: "400px" }}
-        center={defaultCenter}
-        zoom={13}
-        onClick={handleMapClick}
-        options={{ 
-          disableDefaultUI: readonly,
-          draggable: !readonly
-        }}
-      >
-        {location && <Marker position={location} />}
-      </GoogleMap>
-    </LoadScript>
+    <div 
+      id="map" 
+      className={`w-full h-[400px] rounded-lg ${className || ''}`}
+    />
   );
 };
 
