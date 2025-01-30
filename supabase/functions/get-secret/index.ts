@@ -13,8 +13,18 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Log the request for debugging
+    console.log('Received request for secret');
+
+    // Parse the request body
     const { secretName } = await req.json();
     console.log('Requested secret:', secretName);
+
+    // Validate the secret name
+    if (!secretName) {
+      console.error('No secret name provided');
+      throw new Error('Secret name is required');
+    }
 
     // Get the secret value from environment variables
     const secretValue = Deno.env.get(secretName);
@@ -23,23 +33,33 @@ Deno.serve(async (req) => {
       throw new Error(`Secret ${secretName} not found`);
     }
 
+    console.log(`Successfully retrieved secret: ${secretName}`);
+
+    // Return the secret value
     return new Response(
       JSON.stringify({
         data: secretValue,
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 200,
       },
     );
   } catch (error) {
     console.error('Error in get-secret function:', error);
+    
     return new Response(
       JSON.stringify({
         error: error.message,
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 400,
       },
     );
