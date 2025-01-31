@@ -17,11 +17,27 @@ export const QuickNote = ({ onSave }: QuickNoteProps) => {
   const handleSave = async () => {
     if (!note.trim()) return;
 
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save notes",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from('notes')
-      .insert([{ content: note }]);
+      .insert({
+        content: note,
+        user_id: user.id
+      });
 
     if (error) {
+      console.error("Error saving note:", error);
       toast({
         title: "Error",
         description: "Failed to save note",
