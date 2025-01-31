@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Index from "@/pages/Index";
 import Notes from "@/pages/Notes";
 import Auth from "@/pages/Auth";
+import Settings from "@/pages/Settings";
+import Help from "@/pages/Help";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +19,8 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/notes" element={<Notes />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/help" element={<Help />} />
           </Routes>
         </Router>
         <Toaster />
