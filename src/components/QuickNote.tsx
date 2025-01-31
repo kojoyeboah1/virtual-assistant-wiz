@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { SaveIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface QuickNoteProps {
   onSave?: (note: string) => void;
@@ -10,12 +12,34 @@ interface QuickNoteProps {
 
 export const QuickNote = ({ onSave }: QuickNoteProps) => {
   const [note, setNote] = useState("");
+  const { toast } = useToast();
 
-  const handleSave = () => {
-    if (note.trim() && onSave) {
-      onSave(note);
-      setNote("");
+  const handleSave = async () => {
+    if (!note.trim()) return;
+
+    const { error } = await supabase
+      .from('notes')
+      .insert([{ content: note }]);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save note",
+        variant: "destructive",
+      });
+      return;
     }
+
+    toast({
+      title: "Success",
+      description: "Note saved successfully",
+    });
+
+    if (onSave) {
+      onSave(note);
+    }
+    
+    setNote("");
   };
 
   return (
