@@ -12,11 +12,11 @@ import {
 } from "date-fns";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarDay } from "./calendar/CalendarDay";
-import { Tooltip } from "@/components/ui/tooltip";
+import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 import { getEventsForNextYears } from "@/utils/calendarEvents";
 import { TaskDialog } from "./TaskDialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface CalendarEvent {
   id: string;
@@ -103,84 +103,86 @@ export const Calendar = ({
   };
 
   return (
-    <Card className="glass-card">
-      <CardContent className="pt-6">
-        <CalendarHeader
-          currentDate={currentDate}
-          onPreviousMonth={handlePreviousMonth}
-          onNextMonth={handleNextMonth}
-        />
-        <div className="grid grid-cols-7 gap-2 text-center">
-          {DAYS.map((day) => (
-            <div key={day} className="font-semibold text-sm py-2">
-              {day}
-            </div>
-          ))}
-          {daysInMonth.map((day, i) => {
-            const dayEvents = allEvents.filter((event) =>
-              isSameDay(new Date(event.time), day)
-            );
+    <TooltipProvider>
+      <Card className="glass-card">
+        <CardContent className="pt-6">
+          <CalendarHeader
+            currentDate={currentDate}
+            onPreviousMonth={handlePreviousMonth}
+            onNextMonth={handleNextMonth}
+          />
+          <div className="grid grid-cols-7 gap-2 text-center">
+            {DAYS.map((day) => (
+              <div key={day} className="font-semibold text-sm py-2">
+                {day}
+              </div>
+            ))}
+            {daysInMonth.map((day, i) => {
+              const dayEvents = allEvents.filter((event) =>
+                isSameDay(new Date(event.time), day)
+              );
 
-            return (
-              <Tooltip key={i}>
-                <TooltipTrigger asChild>
-                  <div
-                    onMouseEnter={() => setHoveredDate(day)}
-                    onMouseLeave={() => setHoveredDate(null)}
-                  >
-                    <CalendarDay
-                      day={day}
-                      events={dayEvents}
-                      currentDate={currentDate}
-                      isSelected={!!selectedDate && isSameDay(day, selectedDate)}
-                      isToday={isSameDay(day, new Date())}
-                      onClick={() => handleDayClick(day)}
-                      isHovered={!!hoveredDate && isSameDay(day, hoveredDate)}
-                    />
-                  </div>
-                </TooltipTrigger>
-                {dayEvents.length > 0 && (
-                  <TooltipContent side="right" className="p-2 space-y-1">
-                    {dayEvents.map((event) => (
-                      <div key={event.id} className="text-sm">
-                        {event.title} ({event.type})
-                      </div>
-                    ))}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            );
-          })}
-        </div>
-      </CardContent>
-      <TaskDialog
-        open={isTaskDialogOpen}
-        onOpenChange={setIsTaskDialogOpen}
-        onSubmit={(values) => {
-          // Handle task creation
-          if (selectedTaskDate) {
-            const dayEvents = allEvents.filter((event) =>
-              isSameDay(new Date(event.time), selectedTaskDate)
-            );
-            const eventDescriptions = dayEvents
-              .map((event) => event.title)
-              .join(", ");
-            
-            values.description = eventDescriptions
-              ? `Events on this day: ${eventDescriptions}\n\n${values.description}`
-              : values.description;
+              return (
+                <Tooltip key={i}>
+                  <TooltipTrigger asChild>
+                    <div
+                      onMouseEnter={() => setHoveredDate(day)}
+                      onMouseLeave={() => setHoveredDate(null)}
+                    >
+                      <CalendarDay
+                        day={day}
+                        events={dayEvents}
+                        currentDate={currentDate}
+                        isSelected={!!selectedDate && isSameDay(day, selectedDate)}
+                        isToday={isSameDay(day, new Date())}
+                        onClick={() => handleDayClick(day)}
+                        isHovered={!!hoveredDate && isSameDay(day, hoveredDate)}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  {dayEvents.length > 0 && (
+                    <TooltipContent side="right" className="p-2 space-y-1">
+                      {dayEvents.map((event) => (
+                        <div key={event.id} className="text-sm">
+                          {event.title} ({event.type})
+                        </div>
+                      ))}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              );
+            })}
+          </div>
+        </CardContent>
+        <TaskDialog
+          open={isTaskDialogOpen}
+          onOpenChange={setIsTaskDialogOpen}
+          onSubmit={(values) => {
+            // Handle task creation
+            if (selectedTaskDate) {
+              const dayEvents = allEvents.filter((event) =>
+                isSameDay(new Date(event.time), selectedTaskDate)
+              );
+              const eventDescriptions = dayEvents
+                .map((event) => event.title)
+                .join(", ");
+              
+              values.description = eventDescriptions
+                ? `Events on this day: ${eventDescriptions}\n\n${values.description}`
+                : values.description;
+            }
+            setIsTaskDialogOpen(false);
+          }}
+          mode="create"
+          initialValues={
+            selectedTaskDate
+              ? {
+                  dueDate: selectedTaskDate.toISOString().split("T")[0],
+                }
+              : undefined
           }
-          setIsTaskDialogOpen(false);
-        }}
-        mode="create"
-        initialValues={
-          selectedTaskDate
-            ? {
-                dueDate: selectedTaskDate.toISOString().split("T")[0],
-              }
-            : undefined
-        }
-      />
-    </Card>
+        />
+      </Card>
+    </TooltipProvider>
   );
 };
