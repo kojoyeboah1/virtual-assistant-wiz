@@ -6,6 +6,7 @@ import { TaskDialog } from "@/components/TaskDialog";
 import { useToast } from "@/components/ui/use-toast";
 import TaskStats from "./TaskStats";
 import TaskFilters from "./TaskFilters";
+import { differenceInDays } from "date-fns";
 
 interface Task {
   id: string;
@@ -30,21 +31,30 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit }: TaskSect
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"dueDate" | "priority">("dueDate");
+  const [notifiedTaskIds, setNotifiedTaskIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const upcomingTasks = tasks.filter(
-      (task) => !task.completed && 
-      new Date(task.dueDate).getTime() - new Date().getTime() <= 3 * 24 * 60 * 60 * 1000
-    );
+    const now = new Date();
+    const upcomingTasks = tasks.filter(task => {
+      if (task.completed || notifiedTaskIds.has(task.id)) return false;
+      
+      const dueDate = new Date(task.dueDate);
+      const daysDifference = differenceInDays(dueDate, now);
+      return daysDifference >= 0 && daysDifference <= 3;
+    });
 
     if (upcomingTasks.length > 0) {
+      const newNotifiedIds = new Set(notifiedTaskIds);
+      upcomingTasks.forEach(task => newNotifiedIds.add(task.id));
+      setNotifiedTaskIds(newNotifiedIds);
+
       toast({
         title: "Upcoming tasks",
         description: `You have ${upcomingTasks.length} tasks due in the next 3 days.`,
         duration: 5000,
       });
     }
-  }, [tasks, toast]);
+  }, [tasks, toast]); // Remove notifiedTaskIds from dependencies to prevent re-runs
 
   const handleTaskSubmit = (values: Omit<Task, "id" | "completed">) => {
     if (editingTask) {
