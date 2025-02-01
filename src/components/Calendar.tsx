@@ -12,8 +12,12 @@ import {
 } from "date-fns";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarDay } from "./calendar/CalendarDay";
-import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
-import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getEventsForNextYears } from "@/utils/calendarEvents";
 import { TaskDialog } from "./TaskDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -103,20 +107,20 @@ export const Calendar = ({
   };
 
   return (
-    <TooltipProvider>
-      <Card className="glass-card">
-        <CardContent className="pt-6">
-          <CalendarHeader
-            currentDate={currentDate}
-            onPreviousMonth={handlePreviousMonth}
-            onNextMonth={handleNextMonth}
-          />
-          <div className="grid grid-cols-7 gap-2 text-center">
-            {DAYS.map((day) => (
-              <div key={day} className="font-semibold text-sm py-2">
-                {day}
-              </div>
-            ))}
+    <Card className="glass-card">
+      <CardContent className="pt-6">
+        <CalendarHeader
+          currentDate={currentDate}
+          onPreviousMonth={handlePreviousMonth}
+          onNextMonth={handleNextMonth}
+        />
+        <div className="grid grid-cols-7 gap-2 text-center">
+          {DAYS.map((day) => (
+            <div key={day} className="font-semibold text-sm py-2">
+              {day}
+            </div>
+          ))}
+          <TooltipProvider>
             {daysInMonth.map((day, i) => {
               const dayEvents = allEvents.filter((event) =>
                 isSameDay(new Date(event.time), day)
@@ -152,37 +156,36 @@ export const Calendar = ({
                 </Tooltip>
               );
             })}
-          </div>
-        </CardContent>
-        <TaskDialog
-          open={isTaskDialogOpen}
-          onOpenChange={setIsTaskDialogOpen}
-          onSubmit={(values) => {
-            // Handle task creation
-            if (selectedTaskDate) {
-              const dayEvents = allEvents.filter((event) =>
-                isSameDay(new Date(event.time), selectedTaskDate)
-              );
-              const eventDescriptions = dayEvents
-                .map((event) => event.title)
-                .join(", ");
-              
-              values.description = eventDescriptions
-                ? `Events on this day: ${eventDescriptions}\n\n${values.description}`
-                : values.description;
-            }
-            setIsTaskDialogOpen(false);
-          }}
-          mode="create"
-          initialValues={
-            selectedTaskDate
-              ? {
-                  dueDate: selectedTaskDate.toISOString().split("T")[0],
-                }
-              : undefined
+          </TooltipProvider>
+        </div>
+      </CardContent>
+      <TaskDialog
+        open={isTaskDialogOpen}
+        onOpenChange={setIsTaskDialogOpen}
+        onSubmit={(values) => {
+          if (selectedTaskDate) {
+            const dayEvents = allEvents.filter((event) =>
+              isSameDay(new Date(event.time), selectedTaskDate)
+            );
+            const eventDescriptions = dayEvents
+              .map((event) => event.title)
+              .join(", ");
+            
+            values.description = eventDescriptions
+              ? `Events on this day: ${eventDescriptions}\n\n${values.description}`
+              : values.description;
           }
-        />
-      </Card>
-    </TooltipProvider>
+          setIsTaskDialogOpen(false);
+        }}
+        mode="create"
+        initialValues={
+          selectedTaskDate
+            ? {
+                dueDate: selectedTaskDate.toISOString().split("T")[0],
+              }
+            : undefined
+        }
+      />
+    </Card>
   );
 };
