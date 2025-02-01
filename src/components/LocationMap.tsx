@@ -37,6 +37,7 @@ export const LocationMap = ({
   const [marker, setMarker] = useState<google.maps.Marker | null>(null);
   const { toast } = useToast();
 
+  // Fetch API key from Supabase Edge Function
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
@@ -56,7 +57,7 @@ export const LocationMap = ({
           return;
         }
 
-        if (!data) {
+        if (!data?.data) {
           console.error('No API key returned from function');
           setLoadError("Could not load Google Maps API key");
           toast({
@@ -83,48 +84,63 @@ export const LocationMap = ({
     fetchApiKey();
   }, [toast]);
 
+  // Initialize map when API key is available
   useEffect(() => {
-    if (!apiKey || !window.google || map) return;
+    if (!apiKey || window.google || map) return;
 
     const initializeMap = () => {
       const mapElement = document.getElementById('map');
       if (!mapElement) return;
 
-      const newMap = new window.google.maps.Map(mapElement, {
-        center: location || { lat: 0, lng: 0 },
-        zoom: 13,
-        disableDefaultUI: readonly,
-        draggable: !readonly,
-      });
-
-      setMap(newMap);
-
-      if (location) {
-        const newMarker = new window.google.maps.Marker({
-          position: location,
-          map: newMap,
+      try {
+        const defaultLocation = location || { lat: 0, lng: 0 };
+        const newMap = new window.google.maps.Map(mapElement, {
+          center: defaultLocation,
+          zoom: 13,
+          disableDefaultUI: readonly,
+          draggable: !readonly,
+          gestureHandling: readonly ? 'none' : 'cooperative',
         });
-        setMarker(newMarker);
-      }
 
-      if (isEditable && onLocationSelect) {
-        newMap.addListener('click', (e: google.maps.MapMouseEvent) => {
-          const newLocation = {
-            lat: e.latLng!.lat(),
-            lng: e.latLng!.lng(),
-          };
-          
-          if (marker) {
-            marker.setPosition(newLocation);
-          } else {
-            const newMarker = new window.google.maps.Marker({
-              position: newLocation,
-              map: newMap,
-            });
-            setMarker(newMarker);
-          }
-          
-          onLocationSelect(newLocation);
+        setMap(newMap);
+
+        if (location) {
+          const newMarker = new window.google.maps.Marker({
+            position: location,
+            map: newMap,
+            draggable: isEditable,
+          });
+          setMarker(newMarker);
+        }
+
+        if (isEditable && onLocationSelect) {
+          newMap.addListener('click', (e: google.maps.MapMouseEvent) => {
+            const newLocation = {
+              lat: e.latLng!.lat(),
+              lng: e.latLng!.lng(),
+            };
+            
+            if (marker) {
+              marker.setPosition(newLocation);
+            } else {
+              const newMarker = new window.google.maps.Marker({
+                position: newLocation,
+                map: newMap,
+                draggable: true,
+              });
+              setMarker(newMarker);
+            }
+            
+            onLocationSelect(newLocation);
+          });
+        }
+      } catch (err) {
+        console.error('Error initializing map:', err);
+        setLoadError("Failed to initialize map");
+        toast({
+          title: "Error",
+          description: "Failed to initialize map",
+          variant: "destructive",
         });
       }
     };
@@ -163,7 +179,11 @@ export const LocationMap = ({
   }, [apiKey, location, isEditable, onLocationSelect, readonly, toast]);
 
   if (loadError) {
-    return <div className="p-4 text-red-500">Error loading map: {loadError}</div>;
+    return (
+      <div className="p-4 text-red-500 bg-red-50 rounded-lg">
+        Error loading map: {loadError}
+      </div>
+    );
   }
 
   if (!isLoaded || !apiKey) {
@@ -178,7 +198,8 @@ export const LocationMap = ({
   return (
     <div 
       id="map" 
-      className={`w-full h-[400px] rounded-lg ${className || ''}`}
+      className={`w-full h-[400px] rounded-lg shadow-md ${className || ''}`}
+      style={{ minHeight: '200px' }}
     />
   );
 };
