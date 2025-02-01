@@ -5,8 +5,8 @@ import { useTasks } from "@/hooks/useTasks";
 import CalendarSection from "@/components/CalendarSection";
 
 const Calendar = () => {
-  const { user } = useAuth();
-  const { tasks } = useTasks(user?.id || null);
+  const { userId } = useAuth();
+  const { tasks } = useTasks(userId);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   return (

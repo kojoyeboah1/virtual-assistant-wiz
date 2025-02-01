@@ -4,8 +4,12 @@ import { useTasks } from "@/hooks/useTasks";
 import TaskSection from "@/components/TaskSection";
 
 const Tasks = () => {
-  const { user } = useAuth();
-  const { tasks, createTask, updateTask, toggleTask } = useTasks(user?.id || null);
+  const { userId } = useAuth();
+  const { tasks, createTask, updateTask, toggleTask } = useTasks(userId);
+
+  const handleTaskEdit = (taskId: string, task: Omit<Task, "id" | "completed">) => {
+    updateTask({ taskId, task });
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -14,7 +18,7 @@ const Tasks = () => {
         tasks={tasks}
         onTaskToggle={toggleTask}
         onTaskCreate={createTask}
-        onTaskEdit={updateTask}
+        onTaskEdit={handleTaskEdit}
       />
     </div>
   );

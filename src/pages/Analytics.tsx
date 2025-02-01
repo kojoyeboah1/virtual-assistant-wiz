@@ -15,8 +15,8 @@ import {
 import { startOfMonth, endOfMonth, eachMonthOfInterval, format, subMonths } from "date-fns";
 
 const Analytics = () => {
-  const { user } = useAuth();
-  const { tasks } = useTasks(user?.id || null);
+  const { userId } = useAuth();
+  const { tasks } = useTasks(userId);
 
   const last6Months = eachMonthOfInterval({
     start: startOfMonth(subMonths(new Date(), 5)),
