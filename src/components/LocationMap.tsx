@@ -49,7 +49,9 @@ export const LocationMap = ({
       style={{ minHeight: '200px' }}
       ref={(element) => {
         if (element) {
-          initializeMap(element);
+          setTimeout(() => {
+            initializeMap(element);
+          }, 100);
         }
       }}
     />

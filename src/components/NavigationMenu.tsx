@@ -48,14 +48,14 @@ const MainNav = () => {
           <NavigationMenuItem>
             <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
             <NavigationMenuContent>
-              <ul className="grid gap-3 p-4 w-[200px]">
+              <ul className="grid gap-3 p-4 w-[250px]">
                 <li>
                   <NavigationMenuLink asChild>
                     <a
                       href="/"
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      Home
+                      Dashboard
                     </a>
                   </NavigationMenuLink>
                 </li>
@@ -66,6 +66,36 @@ const MainNav = () => {
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
                       Notes
+                    </a>
+                  </NavigationMenuLink>
+                </li>
+                <li>
+                  <NavigationMenuLink asChild>
+                    <a
+                      href="/calendar"
+                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      Calendar View
+                    </a>
+                  </NavigationMenuLink>
+                </li>
+                <li>
+                  <NavigationMenuLink asChild>
+                    <a
+                      href="/tasks"
+                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      Task Manager
+                    </a>
+                  </NavigationMenuLink>
+                </li>
+                <li>
+                  <NavigationMenuLink asChild>
+                    <a
+                      href="/analytics"
+                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      Analytics
                     </a>
                   </NavigationMenuLink>
                 </li>
@@ -85,7 +115,7 @@ const MainNav = () => {
                       href="/help"
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      Help
+                      Help & Support
                     </a>
                   </NavigationMenuLink>
                 </li>

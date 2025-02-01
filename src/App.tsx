@@ -8,6 +8,9 @@ import Notes from "@/pages/Notes";
 import Auth from "@/pages/Auth";
 import Settings from "@/pages/Settings";
 import Help from "@/pages/Help";
+import Calendar from "@/pages/Calendar";
+import Tasks from "@/pages/Tasks";
+import Analytics from "@/pages/Analytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +33,9 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/help" element={<Help />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/analytics" element={<Analytics />} />
             </Routes>
           </Router>
           <Toaster />
