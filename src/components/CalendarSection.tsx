@@ -12,24 +12,12 @@ const CalendarSection = ({ tasks, selectedDate, onDateSelect }: CalendarSectionP
     <Calendar
       date={new Date()}
       events={[
-        {
-          id: "1",
-          title: "Team Meeting",
-          time: "2024-02-20T10:00:00",
-          type: "meeting",
-        },
-        {
-          id: "2",
-          title: "Project Review",
-          time: "2024-02-22T14:00:00",
-          type: "meeting",
-        },
-        {
-          id: "3",
-          title: "Weekly Sync",
-          time: "2024-02-26T11:00:00",
-          type: "meeting",
-        },
+        ...tasks.map(task => ({
+          id: task.id,
+          title: task.title,
+          time: task.dueDate,
+          type: "task" as const,
+        })),
       ]}
       tasks={tasks}
       selectedDate={selectedDate}
