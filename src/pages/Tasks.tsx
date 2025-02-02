@@ -7,6 +7,11 @@ const Tasks = () => {
   const { userId } = useAuth();
   const { tasks, toggleTask, createTask, updateTask } = useTasks(userId);
 
+  // Create a wrapper function to match the expected signature
+  const handleTaskEdit = (taskId: string, task: any) => {
+    updateTask({ taskId, task });
+  };
+
   return (
     <div className="container mx-auto p-4">
       <MainNav />
@@ -16,7 +21,7 @@ const Tasks = () => {
           tasks={tasks}
           onTaskToggle={toggleTask}
           onTaskCreate={createTask}
-          onTaskEdit={updateTask}
+          onTaskEdit={handleTaskEdit}
         />
       </div>
     </div>
