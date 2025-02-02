@@ -31,13 +31,11 @@ const TabsSection = ({
       </TabsList>
       <TabsContent value="tasks" className="space-y-4">
         <TaskSection 
-          tasks={tasks.filter(task => 
-            !selectedDate || 
-            new Date(task.dueDate).toDateString() === selectedDate.toDateString()
-          )} 
+          tasks={[]} // Empty array to prevent showing existing tasks
           onTaskToggle={onTaskToggle}
           onTaskCreate={onTaskCreate}
           onTaskEdit={onTaskEdit}
+          createOnly={true} // New prop to indicate create-only mode
         />
       </TabsContent>
       <TabsContent value="calendar" className="space-y-4">

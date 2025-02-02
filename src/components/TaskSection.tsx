@@ -23,9 +23,10 @@ interface TaskSectionProps {
   onTaskToggle: (taskId: string) => void;
   onTaskCreate?: (task: Omit<Task, "id" | "completed">) => void;
   onTaskEdit?: (taskId: string, task: Omit<Task, "id" | "completed">) => void;
+  createOnly?: boolean;
 }
 
-const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit }: TaskSectionProps) => {
+const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly = false }: TaskSectionProps) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -74,6 +75,8 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit }: TaskSect
   };
 
   const handleTaskClick = (task: Task) => {
+    if (createOnly) return;
+    
     if (!onTaskEdit) {
       onTaskToggle(task.id);
       return;
@@ -112,24 +115,29 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit }: TaskSect
         </Button>
       </div>
 
-      <TaskFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        sortBy={sortBy}
-        onSortChange={(value: "dueDate" | "priority") => setSortBy(value)}
-      />
-
-      <TaskStats tasks={tasks} />
-
-      <div className="space-y-3">
-        {filteredTasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            {...task}
-            onClick={() => handleTaskClick(task)}
+      {!createOnly && (
+        <>
+          <TaskFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sortBy={sortBy}
+            onSortChange={(value: "dueDate" | "priority") => setSortBy(value)}
           />
-        ))}
-      </div>
+
+          <TaskStats tasks={tasks} />
+
+          <div className="space-y-3">
+            {filteredTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                {...task}
+                onClick={() => handleTaskClick(task)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+      
       <TaskDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
