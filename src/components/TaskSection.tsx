@@ -16,6 +16,7 @@ interface Task {
   dueDate: string;
   location?: { lat: number; lng: number };
   completed: boolean;
+  expired?: boolean;
 }
 
 interface TaskSectionProps {
@@ -55,7 +56,7 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
         duration: 5000,
       });
     }
-  }, [tasks, toast]); // Remove notifiedTaskIds from dependencies to prevent re-runs
+  }, [tasks, toast]);
 
   const handleTaskSubmit = (values: Omit<Task, "id" | "completed">) => {
     if (editingTask) {
@@ -86,6 +87,7 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
   };
 
   const filteredTasks = tasks
+    .filter((task) => !task.expired) // Filter out expired tasks
     .filter((task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -124,7 +126,7 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
             onSortChange={(value: "dueDate" | "priority") => setSortBy(value)}
           />
 
-          <TaskStats tasks={tasks} />
+          <TaskStats tasks={filteredTasks} />
 
           <div className="space-y-3">
             {filteredTasks.map((task) => (

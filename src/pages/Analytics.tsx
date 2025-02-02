@@ -32,14 +32,18 @@ const Analytics = () => {
     return {
       month: format(month, 'MMM yyyy'),
       completed: monthTasks.filter(task => task.completed).length,
-      pending: monthTasks.filter(task => !task.completed).length,
+      uncompleted: monthTasks.filter(task => task.expired && !task.completed).length,
+      pending: monthTasks.filter(task => !task.completed && !task.expired).length,
     };
   });
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.completed).length;
-  const pendingTasks = totalTasks - completedTasks;
-  const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : 0;
+  const uncompletedTasks = tasks.filter(task => task.expired && !task.completed).length;
+  const pendingTasks = tasks.filter(task => !task.completed && !task.expired).length;
+  const completionRate = totalTasks > 0 
+    ? ((completedTasks / (completedTasks + uncompletedTasks)) * 100).toFixed(1) 
+    : 0;
 
   return (
     <div className="container mx-auto p-4">
@@ -47,14 +51,18 @@ const Analytics = () => {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Analytics</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <h3 className="text-lg font-medium">Total Tasks</h3>
             <p className="text-3xl font-bold">{totalTasks}</p>
           </Card>
           <Card className="p-4">
-            <h3 className="text-lg font-medium">Completed Tasks</h3>
+            <h3 className="text-lg font-medium">Completed</h3>
             <p className="text-3xl font-bold text-green-600">{completedTasks}</p>
+          </Card>
+          <Card className="p-4">
+            <h3 className="text-lg font-medium">Uncompleted</h3>
+            <p className="text-3xl font-bold text-red-600">{uncompletedTasks}</p>
           </Card>
           <Card className="p-4">
             <h3 className="text-lg font-medium">Completion Rate</h3>
@@ -73,6 +81,7 @@ const Analytics = () => {
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="completed" name="Completed" fill="#22c55e" />
+                <Bar dataKey="uncompleted" name="Uncompleted" fill="#ef4444" />
                 <Bar dataKey="pending" name="Pending" fill="#f97316" />
               </BarChart>
             </ResponsiveContainer>

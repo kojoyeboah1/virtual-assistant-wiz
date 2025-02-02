@@ -39,6 +39,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           due_date: string
+          expired: boolean | null
           id: string
           location_lat: number | null
           location_lng: number | null
@@ -52,6 +53,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           due_date: string
+          expired?: boolean | null
           id?: string
           location_lat?: number | null
           location_lng?: number | null
@@ -65,6 +67,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           due_date?: string
+          expired?: boolean | null
           id?: string
           location_lat?: number | null
           location_lng?: number | null
