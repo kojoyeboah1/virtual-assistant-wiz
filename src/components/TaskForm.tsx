@@ -41,7 +41,7 @@ export const TaskForm = ({ onSubmit, initialValues = {} }: TaskFormProps) => {
     e.preventDefault();
     onSubmit({
       title,
-      description,
+      description: description || "", // Allow empty description
       priority,
       dueDate,
       location,
@@ -64,13 +64,13 @@ export const TaskForm = ({ onSubmit, initialValues = {} }: TaskFormProps) => {
 
       <div className="space-y-2">
         <label htmlFor="description" className="text-sm font-medium">
-          Description
+          Description (Optional)
         </label>
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          required
+          placeholder="Add a description (optional)"
         />
       </div>
 
