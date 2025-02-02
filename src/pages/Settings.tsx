@@ -4,11 +4,42 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Moon, Sun, Monitor, RefreshCw } from "lucide-react";
 import MainNav from "@/components/NavigationMenu";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const { userId } = useAuth();
+
+  const handleResetAnalytics = async () => {
+    if (!userId) return;
+
+    try {
+      // Mark all tasks as expired
+      const { error } = await supabase
+        .from('tasks')
+        .update({ expired: true })
+        .eq('user_id', userId)
+        .not('completed', 'is', true);
+
+      if (error) throw error;
+
+      toast({
+        title: "Analytics Reset",
+        description: "Your analytics have been reset successfully. All incomplete tasks have been moved to history.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reset analytics. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto p-6">
@@ -72,6 +103,23 @@ export default function Settings() {
                 </div>
               </RadioGroup>
             </div>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Analytics</h2>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Reset your analytics by moving all incomplete tasks to history. This action cannot be undone.
+            </p>
+            <Button 
+              variant="destructive" 
+              className="flex items-center gap-2"
+              onClick={handleResetAnalytics}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Reset Analytics
+            </Button>
           </div>
         </Card>
       </div>

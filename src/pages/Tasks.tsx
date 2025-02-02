@@ -1,33 +1,24 @@
+import MainNav from "@/components/NavigationMenu";
+import TaskSection from "@/components/TaskSection";
 import { useAuth } from "@/hooks/useAuth";
 import { useTasks } from "@/hooks/useTasks";
-import TaskSection from "@/components/TaskSection";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: "low" | "medium" | "high";
-  dueDate: string;
-  location?: { lat: number; lng: number };
-  completed: boolean;
-}
 
 const Tasks = () => {
   const { userId } = useAuth();
-  const { tasks, createTask, updateTask, toggleTask } = useTasks(userId);
-
-  const handleTaskEdit = (taskId: string, task: Omit<Task, "id" | "completed">) => {
-    updateTask({ taskId, task });
-  };
+  const { tasks, toggleTask, createTask, updateTask } = useTasks(userId);
 
   return (
     <div className="container mx-auto p-4">
-      <TaskSection
-        tasks={tasks}
-        onTaskToggle={toggleTask}
-        onTaskCreate={createTask}
-        onTaskEdit={handleTaskEdit}
-      />
+      <MainNav />
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Task Manager</h1>
+        <TaskSection
+          tasks={tasks}
+          onTaskToggle={toggleTask}
+          onTaskCreate={createTask}
+          onTaskEdit={updateTask}
+        />
+      </div>
     </div>
   );
 };
