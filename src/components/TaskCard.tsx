@@ -11,6 +11,7 @@ interface TaskCardProps {
   dueDate: string;
   location?: { lat: number; lng: number };
   completed?: boolean;
+  expired?: boolean;
   onClick?: () => void;
 }
 
@@ -21,6 +22,7 @@ export const TaskCard = ({
   dueDate,
   location,
   completed = false,
+  expired = false,
   onClick,
 }: TaskCardProps) => {
   const priorityColors = {
@@ -33,7 +35,8 @@ export const TaskCard = ({
     <Card
       className={cn(
         "glass-card hover-lift cursor-pointer",
-        completed && "opacity-75"
+        completed && "opacity-75",
+        expired && !completed && "opacity-50 bg-red-50"
       )}
       onClick={onClick}
     >

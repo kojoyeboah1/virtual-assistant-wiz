@@ -11,6 +11,7 @@ interface Task {
   dueDate: string;
   location?: { lat: number; lng: number };
   completed: boolean;
+  expired?: boolean;
 }
 
 export const useTasks = (userId: string | null) => {
@@ -48,6 +49,7 @@ export const useTasks = (userId: string | null) => {
           ? { lat: task.location_lat, lng: task.location_lng }
           : undefined,
         completed: task.completed || false,
+        expired: task.expired || false,
       }));
     },
     enabled: !!userId,
