@@ -6,7 +6,7 @@ import { TaskDialog } from "@/components/TaskDialog";
 import { useToast } from "@/components/ui/use-toast";
 import TaskStats from "./TaskStats";
 import TaskFilters from "./TaskFilters";
-import { differenceInDays } from "date-fns";
+import { differenceInDays, isPast } from "date-fns";
 
 interface Task {
   id: string;
@@ -87,7 +87,10 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
   };
 
   const filteredTasks = tasks
-    .filter((task) => !task.expired) // Filter out expired tasks
+    .map(task => ({
+      ...task,
+      expired: !task.completed && isPast(new Date(task.dueDate)) // Only mark as expired if not completed and past due date
+    }))
     .filter((task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description.toLowerCase().includes(searchQuery.toLowerCase())
