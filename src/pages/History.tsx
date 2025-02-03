@@ -64,11 +64,7 @@ const History = () => {
                     description={task.description || ""}
                     priority={task.priority as "low" | "medium" | "high"}
                     dueDate={format(new Date(task.dueDate), "PPP")}
-                    location={
-                      task.location_lat && task.location_lng
-                        ? { lat: task.location_lat, lng: task.location_lng }
-                        : undefined
-                    }
+                    location={task.location}
                     completed={task.completed}
                     expired={task.expired}
                     readOnly={true}
@@ -90,11 +86,7 @@ const History = () => {
                     description={task.description || ""}
                     priority={task.priority as "low" | "medium" | "high"}
                     dueDate={format(new Date(task.dueDate), "PPP")}
-                    location={
-                      task.location_lat && task.location_lng
-                        ? { lat: task.location_lat, lng: task.location_lng }
-                        : undefined
-                    }
+                    location={task.location}
                     completed={task.completed}
                     expired={task.expired}
                     readOnly={true}
@@ -116,11 +108,7 @@ const History = () => {
                     description={task.description || ""}
                     priority={task.priority as "low" | "medium" | "high"}
                     dueDate={format(new Date(task.dueDate), "PPP")}
-                    location={
-                      task.location_lat && task.location_lng
-                        ? { lat: task.location_lat, lng: task.location_lng }
-                        : undefined
-                    }
+                    location={task.location}
                     completed={task.completed}
                     expired={task.expired}
                     readOnly={true}
