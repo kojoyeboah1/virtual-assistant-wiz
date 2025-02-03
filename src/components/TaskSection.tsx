@@ -35,14 +35,22 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
   const [sortBy, setSortBy] = useState<"dueDate" | "priority">("dueDate");
   const [notifiedTaskIds, setNotifiedTaskIds] = useState<Set<string>>(new Set());
 
+  // Filter out expired tasks from the task manager
+  const activeTasks = tasks.filter(task => {
+    const dueDate = new Date(task.dueDate);
+    return !isPast(dueDate) || task.completed;
+  });
+
   useEffect(() => {
     const now = new Date();
-    const upcomingTasks = tasks.filter(task => {
+    const upcomingTasks = activeTasks.filter(task => {
       if (task.completed || notifiedTaskIds.has(task.id)) return false;
       
       const dueDate = new Date(task.dueDate);
       const daysDifference = differenceInDays(dueDate, now);
-      return daysDifference >= 0 && daysDifference <= 3;
+      
+      // Only notify for tasks that are upcoming but not past due
+      return daysDifference >= 0;
     });
 
     if (upcomingTasks.length > 0) {
@@ -60,7 +68,7 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
       });
       setNotifiedTaskIds(newNotifiedIds);
     }
-  }, [tasks, toast]);
+  }, [activeTasks, toast]);
 
   const handleTaskSubmit = (values: Omit<Task, "id" | "completed">) => {
     if (editingTask) {
@@ -90,11 +98,7 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
     setIsDialogOpen(true);
   };
 
-  const filteredTasks = tasks
-    .map(task => ({
-      ...task,
-      expired: !task.completed && isPast(new Date(task.dueDate))
-    }))
+  const filteredTasks = activeTasks
     .filter((task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description.toLowerCase().includes(searchQuery.toLowerCase())
