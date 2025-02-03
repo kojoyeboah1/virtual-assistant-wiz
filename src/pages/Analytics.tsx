@@ -12,7 +12,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { startOfMonth, endOfMonth, eachMonthOfInterval, format, subMonths } from "date-fns";
+import { startOfMonth, endOfMonth, eachMonthOfInterval, format, subMonths, isPast } from "date-fns";
 
 const Analytics = () => {
   const { userId } = useAuth();
@@ -32,16 +32,16 @@ const Analytics = () => {
     return {
       month: format(month, 'MMM yyyy'),
       completed: monthTasks.filter(task => task.completed).length,
-      uncompleted: monthTasks.filter(task => task.expired && !task.completed).length,
-      pending: monthTasks.filter(task => !task.completed && !task.expired).length,
+      uncompleted: monthTasks.filter(task => !task.completed && isPast(new Date(task.dueDate))).length,
+      pending: monthTasks.filter(task => !task.completed && !isPast(new Date(task.dueDate))).length,
     };
   });
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.completed).length;
-  const uncompletedTasks = tasks.filter(task => task.expired && !task.completed).length;
-  const pendingTasks = tasks.filter(task => !task.completed && !task.expired).length;
-  const completionRate = totalTasks > 0 
+  const uncompletedTasks = tasks.filter(task => !task.completed && isPast(new Date(task.dueDate))).length;
+  const pendingTasks = tasks.filter(task => !task.completed && !isPast(new Date(task.dueDate))).length;
+  const completionRate = (completedTasks + uncompletedTasks) > 0 
     ? ((completedTasks / (completedTasks + uncompletedTasks)) * 100).toFixed(1) 
     : 0;
 

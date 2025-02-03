@@ -6,7 +6,7 @@ import { TaskDialog } from "@/components/TaskDialog";
 import { useToast } from "@/components/ui/use-toast";
 import TaskStats from "./TaskStats";
 import TaskFilters from "./TaskFilters";
-import { differenceInDays, isPast } from "date-fns";
+import { differenceInDays, isPast, format } from "date-fns";
 
 interface Task {
   id: string;
@@ -47,14 +47,18 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
 
     if (upcomingTasks.length > 0) {
       const newNotifiedIds = new Set(notifiedTaskIds);
-      upcomingTasks.forEach(task => newNotifiedIds.add(task.id));
-      setNotifiedTaskIds(newNotifiedIds);
-
-      toast({
-        title: "Upcoming tasks",
-        description: `You have ${upcomingTasks.length} tasks due in the next 3 days.`,
-        duration: 5000,
+      upcomingTasks.forEach(task => {
+        const dueDate = new Date(task.dueDate);
+        const daysLeft = differenceInDays(dueDate, now);
+        newNotifiedIds.add(task.id);
+        
+        toast({
+          title: "Upcoming task",
+          description: `"${task.title}" is due ${daysLeft === 0 ? 'today' : `in ${daysLeft} day${daysLeft > 1 ? 's' : ''}`}`,
+          duration: 5000,
+        });
       });
+      setNotifiedTaskIds(newNotifiedIds);
     }
   }, [tasks, toast]);
 
@@ -89,7 +93,7 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
   const filteredTasks = tasks
     .map(task => ({
       ...task,
-      expired: !task.completed && isPast(new Date(task.dueDate)) // Only mark as expired if not completed and past due date
+      expired: !task.completed && isPast(new Date(task.dueDate))
     }))
     .filter((task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
