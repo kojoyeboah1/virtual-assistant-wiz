@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Moon, Sun, Monitor, RefreshCw } from "lucide-react";
+import { Moon, Sun, Monitor, RefreshCw, Trash2 } from "lucide-react";
 import MainNav from "@/components/NavigationMenu";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +36,32 @@ export default function Settings() {
       toast({
         title: "Error",
         description: "Failed to reset analytics. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClearHistory = async () => {
+    if (!userId) return;
+
+    try {
+      // Delete all expired tasks
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('user_id', userId)
+        .eq('expired', true);
+
+      if (error) throw error;
+
+      toast({
+        title: "History Cleared",
+        description: "Your task history has been cleared successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear history. Please try again.",
         variant: "destructive",
       });
     }
@@ -107,19 +133,37 @@ export default function Settings() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Analytics</h2>
+          <h2 className="text-xl font-semibold mb-4">Data Management</h2>
           <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Reset your analytics by moving all incomplete tasks to history. This action cannot be undone.
-            </p>
-            <Button 
-              variant="destructive" 
-              className="flex items-center gap-2"
-              onClick={handleResetAnalytics}
-            >
-              <RefreshCw className="h-4 w-4" />
-              Reset Analytics
-            </Button>
+            <div className="space-y-2">
+              <p className="text-muted-foreground">
+                Reset your analytics by moving all incomplete tasks to history. This action cannot be undone.
+              </p>
+              <Button 
+                variant="destructive" 
+                className="flex items-center gap-2"
+                onClick={handleResetAnalytics}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset Analytics
+              </Button>
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <div className="space-y-2">
+              <p className="text-muted-foreground">
+                Clear all tasks from history. This action cannot be undone.
+              </p>
+              <Button 
+                variant="destructive" 
+                className="flex items-center gap-2"
+                onClick={handleClearHistory}
+              >
+                <Trash2 className="h-4 w-4" />
+                Clear History
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

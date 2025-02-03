@@ -37,24 +37,24 @@ export const TaskCard = ({
   };
 
   return (
-    <Card
-      className={cn(
-        "relative",
-        onClick && !readOnly ? "hover-lift cursor-pointer" : "",
-        completed && "opacity-75",
-        expired && !completed && "opacity-50 bg-red-50"
+    <div className="flex items-start gap-3">
+      {!readOnly && onToggleComplete && (
+        <Checkbox
+          checked={completed}
+          onCheckedChange={onToggleComplete}
+          className="mt-4"
+        />
       )}
-      onClick={readOnly ? undefined : onClick}
-    >
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <div className="flex flex-row items-start gap-3">
-          {!readOnly && onToggleComplete && (
-            <Checkbox
-              checked={completed}
-              onCheckedChange={onToggleComplete}
-              className="mt-1"
-            />
-          )}
+      <Card
+        className={cn(
+          "flex-1",
+          onClick && !readOnly ? "hover-lift cursor-pointer" : "",
+          completed && "opacity-75",
+          expired && !completed && "opacity-50 bg-red-50"
+        )}
+        onClick={readOnly ? undefined : onClick}
+      >
+        <CardHeader className="pb-2">
           <div className="flex flex-col">
             <h3 className={cn("font-semibold", completed && "line-through")}>
               {title}
@@ -66,26 +66,26 @@ export const TaskCard = ({
               {priority}
             </Badge>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{description}</p>
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center text-sm text-muted-foreground">
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            <span>{dueDate}</span>
-          </div>
-          {location && (
-            <div className="space-y-2">
-              <div className="flex items-center text-sm text-muted-foreground">
-                <MapPinIcon className="mr-2 h-4 w-4" />
-                <span>Location attached</span>
-              </div>
-              <LocationMap location={location} readonly className="mt-2" />
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">{description}</p>
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              <span>{dueDate}</span>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            {location && (
+              <div className="space-y-2">
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <MapPinIcon className="mr-2 h-4 w-4" />
+                  <span>Location attached</span>
+                </div>
+                <LocationMap location={location} readonly className="mt-2" />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
