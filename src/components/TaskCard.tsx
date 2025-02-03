@@ -34,7 +34,8 @@ export const TaskCard = ({
   return (
     <Card
       className={cn(
-        "glass-card hover-lift cursor-pointer",
+        "relative",
+        onClick ? "hover-lift cursor-pointer" : "",
         completed && "opacity-75",
         expired && !completed && "opacity-50 bg-red-50"
       )}
