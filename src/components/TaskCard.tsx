@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, CheckCircle2Icon, MapPinIcon } from "lucide-react";
+import { CalendarIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LocationMap from "./LocationMap";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface TaskCardProps {
   title: string;
@@ -13,6 +14,8 @@ interface TaskCardProps {
   completed?: boolean;
   expired?: boolean;
   onClick?: () => void;
+  onToggleComplete?: () => void;
+  readOnly?: boolean;
 }
 
 export const TaskCard = ({
@@ -24,6 +27,8 @@ export const TaskCard = ({
   completed = false,
   expired = false,
   onClick,
+  onToggleComplete,
+  readOnly = false,
 }: TaskCardProps) => {
   const priorityColors = {
     low: "bg-green-100 text-green-800",
@@ -35,27 +40,33 @@ export const TaskCard = ({
     <Card
       className={cn(
         "relative",
-        onClick ? "hover-lift cursor-pointer" : "",
+        onClick && !readOnly ? "hover-lift cursor-pointer" : "",
         completed && "opacity-75",
         expired && !completed && "opacity-50 bg-red-50"
       )}
-      onClick={onClick}
+      onClick={readOnly ? undefined : onClick}
     >
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <div className="flex flex-col">
-          <h3 className={cn("font-semibold", completed && "line-through")}>
-            {title}
-          </h3>
-          <Badge
-            variant="secondary"
-            className={cn("mt-1 w-fit", priorityColors[priority])}
-          >
-            {priority}
-          </Badge>
+        <div className="flex flex-row items-start gap-3">
+          {!readOnly && onToggleComplete && (
+            <Checkbox
+              checked={completed}
+              onCheckedChange={onToggleComplete}
+              className="mt-1"
+            />
+          )}
+          <div className="flex flex-col">
+            <h3 className={cn("font-semibold", completed && "line-through")}>
+              {title}
+            </h3>
+            <Badge
+              variant="secondary"
+              className={cn("mt-1 w-fit", priorityColors[priority])}
+            >
+              {priority}
+            </Badge>
+          </div>
         </div>
-        {completed && (
-          <CheckCircle2Icon className="h-5 w-5 text-green-500" />
-        )}
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">{description}</p>

@@ -6,7 +6,7 @@ import { TaskDialog } from "@/components/TaskDialog";
 import { useToast } from "@/components/ui/use-toast";
 import TaskStats from "./TaskStats";
 import TaskFilters from "./TaskFilters";
-import { differenceInDays, isPast, format } from "date-fns";
+import { differenceInDays, isPast } from "date-fns";
 
 interface Task {
   id: string;
@@ -25,9 +25,17 @@ interface TaskSectionProps {
   onTaskCreate?: (task: Omit<Task, "id" | "completed">) => void;
   onTaskEdit?: (taskId: string, task: Omit<Task, "id" | "completed">) => void;
   createOnly?: boolean;
+  readOnly?: boolean;
 }
 
-const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly = false }: TaskSectionProps) => {
+const TaskSection = ({ 
+  tasks, 
+  onTaskToggle, 
+  onTaskCreate, 
+  onTaskEdit, 
+  createOnly = false,
+  readOnly = false 
+}: TaskSectionProps) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -88,7 +96,7 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
   };
 
   const handleTaskClick = (task: Task) => {
-    if (createOnly) return;
+    if (createOnly || readOnly) return;
     
     if (!onTaskEdit) {
       onTaskToggle(task.id);
@@ -115,20 +123,22 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg sm:text-xl font-semibold">Tasks</h2>
-        <Button
-          size="sm"
-          className="whitespace-nowrap"
-          onClick={() => {
-            setEditingTask(null);
-            setIsDialogOpen(true);
-          }}
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Task
-        </Button>
+        {!readOnly && (
+          <Button
+            size="sm"
+            className="whitespace-nowrap"
+            onClick={() => {
+              setEditingTask(null);
+              setIsDialogOpen(true);
+            }}
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Task
+          </Button>
+        )}
       </div>
 
-      {!createOnly && (
+      {!createOnly && !readOnly && (
         <>
           <TaskFilters
             searchQuery={searchQuery}
@@ -138,26 +148,30 @@ const TaskSection = ({ tasks, onTaskToggle, onTaskCreate, onTaskEdit, createOnly
           />
 
           <TaskStats tasks={filteredTasks} />
-
-          <div className="space-y-3">
-            {filteredTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                {...task}
-                onClick={() => handleTaskClick(task)}
-              />
-            ))}
-          </div>
         </>
       )}
+
+      <div className="space-y-3">
+        {filteredTasks.map((task) => (
+          <TaskCard
+            key={task.id}
+            {...task}
+            onClick={() => handleTaskClick(task)}
+            onToggleComplete={readOnly ? undefined : () => onTaskToggle(task.id)}
+            readOnly={readOnly}
+          />
+        ))}
+      </div>
       
-      <TaskDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSubmit={handleTaskSubmit}
-        initialValues={editingTask || undefined}
-        mode={editingTask ? "edit" : "create"}
-      />
+      {!readOnly && (
+        <TaskDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSubmit={handleTaskSubmit}
+          initialValues={editingTask || undefined}
+          mode={editingTask ? "edit" : "create"}
+        />
+      )}
     </div>
   );
 };
