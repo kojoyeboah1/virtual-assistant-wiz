@@ -22,13 +22,13 @@ import {
 import { getEventsForNextYears } from "@/utils/calendarEvents";
 import { TaskDialog } from "./TaskDialog";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "./ui/badge";
+import { CalendarLegend } from "./calendar/CalendarLegend";
 
 interface CalendarEvent {
   id: string;
   title: string;
   time: string;
-  type: "meeting" | "task" | "reminder" | "holiday";
+  type: "task" | "reminder" | "holiday";
 }
 
 interface Task {
@@ -66,7 +66,7 @@ export const Calendar = ({
   const monthEnd = endOfMonth(currentDate);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Get events and holidays for the next few years
+  // Get events and holidays for multiple years
   const currentYear = getYear(new Date());
   const { holidays, events: defaultEvents } = getEventsForNextYears(currentYear);
 
@@ -82,7 +82,6 @@ export const Calendar = ({
       time: holiday.date,
       type: "holiday" as const,
     })),
-    // Convert unique tasks Map back to array
     ...Array.from(uniqueTasks.values()).map((task) => ({
       id: `task-${task.id}`,
       title: task.title,
@@ -125,19 +124,6 @@ export const Calendar = ({
     acc[event.type].add(event.title);
     return acc;
   }, {} as Record<CalendarEvent["type"], Set<string>>);
-
-  const getEventColor = (type: CalendarEvent["type"]) => {
-    switch (type) {
-      case "holiday":
-        return "bg-red-100 text-red-800";
-      case "meeting":
-        return "bg-blue-100 text-blue-800";
-      case "task":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   return (
     <Card className="glass-card">
@@ -192,30 +178,7 @@ export const Calendar = ({
           </TooltipProvider>
         </div>
 
-        {/* Legend Section - Now shows only current month's events */}
-        {Object.keys(eventsByType).length > 0 && (
-          <div className="mt-6 space-y-4">
-            <h3 className="text-sm font-semibold">
-              Events for {format(currentDate, 'MMMM yyyy')}
-            </h3>
-            {(Object.entries(eventsByType) as [CalendarEvent["type"], Set<string>][]).map(([type, titles]) => (
-              <div key={type} className="space-y-2">
-                <h4 className="text-sm font-medium capitalize">{type}s</h4>
-                <div className="flex flex-wrap gap-2">
-                  {Array.from(titles).map((title) => (
-                    <Badge
-                      key={`${type}-${title}`}
-                      variant="secondary"
-                      className={`text-xs ${getEventColor(type as CalendarEvent["type"])}`}
-                    >
-                      {title}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <CalendarLegend eventsByType={eventsByType} currentDate={currentDate} />
       </CardContent>
       <TaskDialog
         open={isTaskDialogOpen}

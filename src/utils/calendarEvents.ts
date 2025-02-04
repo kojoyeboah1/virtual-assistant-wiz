@@ -25,51 +25,17 @@ export const generateHolidaysForYear = (year: number): Holiday[] => {
   ];
 };
 
-export const generateDefaultEvents = (year: number) => [
-  {
-    id: "default-1",
-    title: "Team Meeting",
-    time: `${year}-02-20T10:00:00`,
-    type: "meeting" as const,
-  },
-  {
-    id: "default-2",
-    title: "Project Review",
-    time: `${year}-02-22T14:00:00`,
-    type: "meeting" as const,
-  },
-  {
-    id: "default-3",
-    title: "Weekly Sync",
-    time: `${year}-02-26T11:00:00`,
-    type: "meeting" as const,
-  },
-  {
-    id: "default-4",
-    title: "Monthly Planning",
-    time: `${year}-03-01T09:00:00`,
-    type: "meeting" as const,
-  },
-  {
-    id: "default-5",
-    title: "Quarterly Review",
-    time: `${year}-03-15T13:00:00`,
-    type: "meeting" as const,
-  },
-];
-
-export const getEventsForNextYears = (startYear: number, numberOfYears: number = 3) => {
+export const getEventsForNextYears = (startYear: number, numberOfYears: number = 5) => {
   let allHolidays: Holiday[] = [];
-  let allEvents: any[] = [];
 
-  for (let i = 0; i < numberOfYears; i++) {
+  // Generate holidays for past, current and future years
+  for (let i = -1; i < numberOfYears; i++) {
     const year = startYear + i;
     allHolidays = [...allHolidays, ...generateHolidaysForYear(year)];
-    allEvents = [...allEvents, ...generateDefaultEvents(year)];
   }
 
   return {
     holidays: allHolidays,
-    events: allEvents,
+    events: [], // Removed meetings as requested
   };
 };
