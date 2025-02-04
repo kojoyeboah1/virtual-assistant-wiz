@@ -114,11 +114,11 @@ export const Calendar = ({
   // Group events by type for the legend
   const eventsByType = allEvents.reduce((acc, event) => {
     if (!acc[event.type]) {
-      acc[event.type] = new Set();
+      acc[event.type] = new Set<string>();
     }
     acc[event.type].add(event.title);
     return acc;
-  }, {} as Record<string, Set<string>>);
+  }, {} as Record<CalendarEvent["type"], Set<string>>);
 
   const getEventColor = (type: CalendarEvent["type"]) => {
     switch (type) {
@@ -189,7 +189,7 @@ export const Calendar = ({
         {/* Legend Section */}
         <div className="mt-6 space-y-4">
           <h3 className="text-sm font-semibold">Event Legend</h3>
-          {Object.entries(eventsByType).map(([type, titles]) => (
+          {(Object.entries(eventsByType) as [CalendarEvent["type"], Set<string>][]).map(([type, titles]) => (
             <div key={type} className="space-y-2">
               <h4 className="text-sm font-medium capitalize">{type}s</h4>
               <div className="flex flex-wrap gap-2">
