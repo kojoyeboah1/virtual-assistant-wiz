@@ -1,23 +1,30 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
-import { SaveIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { SaveIcon, PlusIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 interface QuickNoteProps {
   onSave?: (note: string) => void;
+  noteToEdit?: { id: string; content: string } | null;
+  onCancel?: () => void;
 }
 
-export const QuickNote = ({ onSave }: QuickNoteProps) => {
+export const QuickNote = ({ onSave, noteToEdit, onCancel }: QuickNoteProps) => {
   const [note, setNote] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (noteToEdit) {
+      setNote(noteToEdit.content);
+    }
+  }, [noteToEdit]);
 
   const handleSave = async () => {
     if (!note.trim()) return;
 
-    // Get the current user
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -29,12 +36,17 @@ export const QuickNote = ({ onSave }: QuickNoteProps) => {
       return;
     }
 
-    const { error } = await supabase
-      .from('notes')
-      .insert({
-        content: note,
-        user_id: user.id
-      });
+    const { error } = noteToEdit 
+      ? await supabase
+          .from('notes')
+          .update({ content: note, updated_at: new Date().toISOString() })
+          .eq('id', noteToEdit.id)
+      : await supabase
+          .from('notes')
+          .insert({
+            content: note,
+            user_id: user.id
+          });
 
     if (error) {
       console.error("Error saving note:", error);
@@ -48,7 +60,7 @@ export const QuickNote = ({ onSave }: QuickNoteProps) => {
 
     toast({
       title: "Success",
-      description: "Note saved successfully",
+      description: noteToEdit ? "Note updated successfully" : "Note saved successfully",
     });
 
     if (onSave) {
@@ -61,7 +73,9 @@ export const QuickNote = ({ onSave }: QuickNoteProps) => {
   return (
     <Card className="glass-card">
       <CardHeader>
-        <CardTitle className="text-lg">Quick Note</CardTitle>
+        <CardTitle className="text-lg">
+          {noteToEdit ? "Edit Note" : "Quick Note"}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Textarea
@@ -70,10 +84,17 @@ export const QuickNote = ({ onSave }: QuickNoteProps) => {
           onChange={(e) => setNote(e.target.value)}
           className="min-h-[100px] mb-4"
         />
-        <Button onClick={handleSave} className="w-full">
-          <SaveIcon className="mr-2 h-4 w-4" />
-          Save Note
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleSave} className="flex-1">
+            <SaveIcon className="mr-2 h-4 w-4" />
+            {noteToEdit ? "Update Note" : "Save Note"}
+          </Button>
+          {noteToEdit && (
+            <Button variant="outline" onClick={onCancel} className="flex-1">
+              Cancel
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
