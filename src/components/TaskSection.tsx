@@ -24,6 +24,7 @@ interface TaskSectionProps {
   onTaskToggle: (taskId: string) => void;
   onTaskCreate?: (task: Omit<Task, "id" | "completed">) => void;
   onTaskEdit?: (taskId: string, task: Omit<Task, "id" | "completed">) => void;
+  onTaskDelete?: (taskId: string) => void;
   createOnly?: boolean;
   readOnly?: boolean;
 }
@@ -32,7 +33,8 @@ const TaskSection = ({
   tasks, 
   onTaskToggle, 
   onTaskCreate, 
-  onTaskEdit, 
+  onTaskEdit,
+  onTaskDelete,
   createOnly = false,
   readOnly = false 
 }: TaskSectionProps) => {
@@ -93,6 +95,15 @@ const TaskSection = ({
       });
     }
     setEditingTask(null);
+    setIsDialogOpen(false);
+  };
+
+  const handleTaskDelete = () => {
+    if (editingTask && onTaskDelete) {
+      onTaskDelete(editingTask.id);
+      setEditingTask(null);
+      setIsDialogOpen(false);
+    }
   };
 
   const handleTaskClick = (task: Task) => {
@@ -168,6 +179,7 @@ const TaskSection = ({
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           onSubmit={handleTaskSubmit}
+          onDelete={editingTask ? handleTaskDelete : undefined}
           initialValues={editingTask || undefined}
           mode={editingTask ? "edit" : "create"}
         />

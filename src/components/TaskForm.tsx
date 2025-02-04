@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import LocationMap from "./LocationMap";
+import { Trash2 } from "lucide-react";
 
 interface TaskFormProps {
   onSubmit: (task: {
@@ -19,6 +20,7 @@ interface TaskFormProps {
     dueDate: string;
     location?: { lat: number; lng: number };
   }) => void;
+  onDelete?: () => void;
   initialValues?: {
     title?: string;
     description?: string;
@@ -26,9 +28,10 @@ interface TaskFormProps {
     dueDate?: string;
     location?: { lat: number; lng: number };
   };
+  mode?: "create" | "edit";
 }
 
-export const TaskForm = ({ onSubmit, initialValues = {} }: TaskFormProps) => {
+export const TaskForm = ({ onSubmit, onDelete, initialValues = {}, mode = "create" }: TaskFormProps) => {
   const [title, setTitle] = useState(initialValues.title || "");
   const [description, setDescription] = useState(initialValues.description || "");
   const [priority, setPriority] = useState<"low" | "medium" | "high">(
@@ -41,7 +44,7 @@ export const TaskForm = ({ onSubmit, initialValues = {} }: TaskFormProps) => {
     e.preventDefault();
     onSubmit({
       title,
-      description: description || "", // Allow empty description
+      description: description || "",
       priority,
       dueDate,
       location,
@@ -112,9 +115,21 @@ export const TaskForm = ({ onSubmit, initialValues = {} }: TaskFormProps) => {
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        Save Task
-      </Button>
+      <div className="flex gap-2">
+        <Button type="submit" className="flex-1">
+          Save Task
+        </Button>
+        {mode === "edit" && onDelete && (
+          <Button 
+            type="button" 
+            variant="destructive"
+            onClick={onDelete}
+            className="px-3"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </form>
   );
 };

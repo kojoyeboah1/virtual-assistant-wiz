@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTasks } from "@/hooks/useTasks";
 import { isPast } from "date-fns";
 import { Card } from "@/components/ui/card";
-import { Inbox, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { Inbox, CheckCircle2, XCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 
@@ -18,9 +18,8 @@ const History = () => {
     return isPast(dueDate);
   });
 
-  const pendingTasks = expiredTasks.filter(task => !task.completed && !task.expired);
   const completedTasks = expiredTasks.filter(task => task.completed);
-  const uncompletedTasks = expiredTasks.filter(task => task.expired && !task.completed);
+  const uncompletedTasks = expiredTasks.filter(task => !task.completed);
 
   const EmptyState = ({ message }: { message: string }) => (
     <Card className="p-8 text-center">
@@ -36,12 +35,8 @@ const History = () => {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Task History</h1>
         
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="pending" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Pending ({pendingTasks.length})
-            </TabsTrigger>
+        <Tabs defaultValue="completed" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="completed" className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4" />
               Completed ({completedTasks.length})
@@ -52,28 +47,6 @@ const History = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="mt-6">
-            {pendingTasks.length === 0 ? (
-              <EmptyState message="No pending tasks in history" />
-            ) : (
-              <div className="space-y-4">
-                {pendingTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    title={task.title}
-                    description={task.description || ""}
-                    priority={task.priority as "low" | "medium" | "high"}
-                    dueDate={format(new Date(task.dueDate), "PPP")}
-                    location={task.location}
-                    completed={task.completed}
-                    expired={task.expired}
-                    readOnly={true}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
           <TabsContent value="completed" className="mt-6">
             {completedTasks.length === 0 ? (
               <EmptyState message="No completed tasks in history" />
@@ -82,11 +55,8 @@ const History = () => {
                 {completedTasks.map((task) => (
                   <TaskCard
                     key={task.id}
-                    title={task.title}
-                    description={task.description || ""}
-                    priority={task.priority as "low" | "medium" | "high"}
+                    {...task}
                     dueDate={format(new Date(task.dueDate), "PPP")}
-                    location={task.location}
                     completed={task.completed}
                     expired={task.expired}
                     readOnly={true}
@@ -104,11 +74,8 @@ const History = () => {
                 {uncompletedTasks.map((task) => (
                   <TaskCard
                     key={task.id}
-                    title={task.title}
-                    description={task.description || ""}
-                    priority={task.priority as "low" | "medium" | "high"}
+                    {...task}
                     dueDate={format(new Date(task.dueDate), "PPP")}
-                    location={task.location}
                     completed={task.completed}
                     expired={task.expired}
                     readOnly={true}

@@ -18,7 +18,6 @@ export const useTasks = (userId: string | null) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch tasks query
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks', userId],
     queryFn: async () => {
@@ -55,7 +54,6 @@ export const useTasks = (userId: string | null) => {
     enabled: !!userId,
   });
 
-  // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: async (newTask: Omit<Task, "id" | "completed">) => {
       if (!userId) throw new Error("User not authenticated");
@@ -93,7 +91,6 @@ export const useTasks = (userId: string | null) => {
     }
   });
 
-  // Update task mutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, task }: { taskId: string; task: Omit<Task, "id" | "completed"> }) => {
       if (!userId) throw new Error("User not authenticated");
@@ -132,7 +129,6 @@ export const useTasks = (userId: string | null) => {
     }
   });
 
-  // Toggle task completion mutation
   const toggleTaskMutation = useMutation({
     mutationFn: async (taskId: string) => {
       if (!userId) throw new Error("User not authenticated");
@@ -163,11 +159,41 @@ export const useTasks = (userId: string | null) => {
     }
   });
 
+  // Delete task mutation
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      if (!userId) throw new Error("User not authenticated");
+
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast({
+        title: "Success",
+        description: "Task deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error deleting task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   return {
     tasks,
     isLoading,
     createTask: createTaskMutation.mutate,
     updateTask: updateTaskMutation.mutate,
     toggleTask: toggleTaskMutation.mutate,
+    deleteTask: deleteTaskMutation.mutate,
   };
 };

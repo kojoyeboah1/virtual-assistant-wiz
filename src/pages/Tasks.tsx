@@ -5,7 +5,7 @@ import { useTasks } from "@/hooks/useTasks";
 
 const Tasks = () => {
   const { userId } = useAuth();
-  const { tasks, toggleTask, createTask, updateTask } = useTasks(userId);
+  const { tasks, toggleTask, createTask, updateTask, deleteTask } = useTasks(userId);
 
   // Create a wrapper function to match the expected signature
   const handleTaskEdit = (taskId: string, task: any) => {
@@ -22,6 +22,7 @@ const Tasks = () => {
           onTaskToggle={toggleTask}
           onTaskCreate={createTask}
           onTaskEdit={handleTaskEdit}
+          onTaskDelete={deleteTask}
         />
       </div>
     </div>

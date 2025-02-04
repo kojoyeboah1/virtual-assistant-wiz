@@ -9,45 +9,32 @@ import { TaskForm } from "./TaskForm";
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (task: {
-    title: string;
-    description: string;
-    priority: "low" | "medium" | "high";
-    dueDate: string;
-    location?: { lat: number; lng: number };
-  }) => void;
-  initialValues?: {
-    title?: string;
-    description?: string;
-    priority?: "low" | "medium" | "high";
-    dueDate?: string;
-    location?: { lat: number; lng: number };
-  };
-  mode: "create" | "edit";
+  onSubmit: (values: any) => void;
+  onDelete?: () => void;
+  initialValues?: any;
+  mode?: "create" | "edit";
 }
 
 export const TaskDialog = ({
   open,
   onOpenChange,
   onSubmit,
+  onDelete,
   initialValues,
-  mode,
+  mode = "create",
 }: TaskDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-[90vh] z-50">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{mode === "create" ? "Create Task" : "Edit Task"}</DialogTitle>
         </DialogHeader>
-        <div className="pb-6">
-          <TaskForm
-            onSubmit={(values) => {
-              onSubmit(values);
-              onOpenChange(false);
-            }}
-            initialValues={initialValues}
-          />
-        </div>
+        <TaskForm 
+          onSubmit={onSubmit} 
+          onDelete={onDelete}
+          initialValues={initialValues} 
+          mode={mode}
+        />
       </DialogContent>
     </Dialog>
   );
