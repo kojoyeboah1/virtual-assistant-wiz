@@ -9,6 +9,7 @@ import {
   subMonths,
   getYear,
   format,
+  isSameMonth,
 } from "date-fns";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarDay } from "./calendar/CalendarDay";
@@ -111,8 +112,13 @@ export const Calendar = ({
     }
   };
 
-  // Group events by type for the legend
-  const eventsByType = allEvents.reduce((acc, event) => {
+  // Filter events for the current month
+  const currentMonthEvents = allEvents.filter(event => 
+    isSameMonth(new Date(event.time), currentDate)
+  );
+
+  // Group events by type for the legend, but only for the current month
+  const eventsByType = currentMonthEvents.reduce((acc, event) => {
     if (!acc[event.type]) {
       acc[event.type] = new Set<string>();
     }
@@ -186,26 +192,30 @@ export const Calendar = ({
           </TooltipProvider>
         </div>
 
-        {/* Legend Section */}
-        <div className="mt-6 space-y-4">
-          <h3 className="text-sm font-semibold">Event Legend</h3>
-          {(Object.entries(eventsByType) as [CalendarEvent["type"], Set<string>][]).map(([type, titles]) => (
-            <div key={type} className="space-y-2">
-              <h4 className="text-sm font-medium capitalize">{type}s</h4>
-              <div className="flex flex-wrap gap-2">
-                {Array.from(titles).map((title) => (
-                  <Badge
-                    key={`${type}-${title}`}
-                    variant="secondary"
-                    className={`text-xs ${getEventColor(type as CalendarEvent["type"])}`}
-                  >
-                    {title}
-                  </Badge>
-                ))}
+        {/* Legend Section - Now shows only current month's events */}
+        {Object.keys(eventsByType).length > 0 && (
+          <div className="mt-6 space-y-4">
+            <h3 className="text-sm font-semibold">
+              Events for {format(currentDate, 'MMMM yyyy')}
+            </h3>
+            {(Object.entries(eventsByType) as [CalendarEvent["type"], Set<string>][]).map(([type, titles]) => (
+              <div key={type} className="space-y-2">
+                <h4 className="text-sm font-medium capitalize">{type}s</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Array.from(titles).map((title) => (
+                    <Badge
+                      key={`${type}-${title}`}
+                      variant="secondary"
+                      className={`text-xs ${getEventColor(type as CalendarEvent["type"])}`}
+                    >
+                      {title}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
       <TaskDialog
         open={isTaskDialogOpen}
