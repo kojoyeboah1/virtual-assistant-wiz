@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { MapLoader } from "./map/MapLoader";
 import { MapError } from "./map/MapError";
 import { useMapInitializer } from "@/hooks/useMapInitializer";
@@ -22,6 +23,7 @@ export const LocationMap = ({
   className,
   readonly 
 }: LocationMapProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
   const {
     loadError,
     isLoaded,
@@ -34,6 +36,12 @@ export const LocationMap = ({
     readonly,
   });
 
+  useEffect(() => {
+    if (mapRef.current && isLoaded && apiKey) {
+      initializeMap(mapRef.current);
+    }
+  }, [isLoaded, apiKey, initializeMap]);
+
   if (loadError) {
     return <MapError error={loadError} />;
   }
@@ -44,16 +52,9 @@ export const LocationMap = ({
 
   return (
     <div 
-      id="map" 
+      ref={mapRef}
       className={`w-full h-[400px] rounded-lg shadow-md ${className || ''}`}
       style={{ minHeight: '200px' }}
-      ref={(element) => {
-        if (element) {
-          setTimeout(() => {
-            initializeMap(element);
-          }, 100);
-        }
-      }}
     />
   );
 };

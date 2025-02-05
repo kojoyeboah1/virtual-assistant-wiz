@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect, useCallback } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Location {
@@ -27,81 +27,63 @@ export const useMapInitializer = ({
   const [marker, setMarker] = useState<google.maps.Marker | null>(null);
   const { toast } = useToast();
 
+  // Cache API key in session storage to prevent frequent requests
   useEffect(() => {
+    const cachedKey = sessionStorage.getItem('google_maps_api_key');
+    if (cachedKey) {
+      setApiKey(cachedKey);
+      return;
+    }
+
     const fetchApiKey = async () => {
       try {
-        console.log('Fetching Google Maps API key...');
         const { data, error } = await supabase.functions.invoke('get-secret', {
           body: { secretName: 'GOOGLE_MAPS_API_KEY' }
         });
         
-        if (error) {
-          console.error('Supabase function error:', error);
+        if (error || !data?.data) {
+          console.error('Error fetching API key:', error);
           setLoadError("Could not load Google Maps API key");
-          toast({
-            title: "Error loading map",
-            description: "Could not load Google Maps API key",
-            variant: "destructive",
-          });
           return;
         }
 
-        if (!data?.data) {
-          console.error('No API key returned from function');
-          setLoadError("Could not load Google Maps API key");
-          toast({
-            title: "Error loading map",
-            description: "Could not load Google Maps API key",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('Successfully fetched API key');
+        sessionStorage.setItem('google_maps_api_key', data.data);
         setApiKey(data.data);
       } catch (err) {
         console.error('Error in fetchApiKey:', err);
         setLoadError("Could not load Google Maps API key");
-        toast({
-          title: "Error loading map",
-          description: "Could not load Google Maps API key",
-          variant: "destructive",
-        });
       }
     };
 
     fetchApiKey();
-  }, [toast]);
+  }, []);
 
+  // Load Google Maps script only once
   useEffect(() => {
-    if (!apiKey || window.google || map) return;
+    if (!apiKey || window.google || document.querySelector('script[src*="maps.googleapis.com"]')) {
+      return;
+    }
 
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
     script.async = true;
     script.defer = true;
-    script.onload = () => setIsLoaded(true);
+    script.id = 'google-maps-script';
+    
+    script.onload = () => {
+      setIsLoaded(true);
+    };
+    
     script.onerror = () => {
       setLoadError("Failed to load Google Maps");
-      toast({
-        title: "Error loading map",
-        description: "Failed to load Google Maps",
-        variant: "destructive",
-      });
+      sessionStorage.removeItem('google_maps_api_key');
     };
+    
     document.head.appendChild(script);
+  }, [apiKey]);
 
-    return () => {
-      if (marker) {
-        marker.setMap(null);
-      }
-      setMap(null);
-      setMarker(null);
-    };
-  }, [apiKey, map, marker, toast]);
-
-  const initializeMap = (mapElement: HTMLElement) => {
-    if (!mapElement) return;
+  const initializeMap = useCallback((mapElement: HTMLElement) => {
+    if (!mapElement || !window.google || map) return;
 
     try {
       const defaultLocation = location || { lat: 0, lng: 0 };
@@ -122,6 +104,18 @@ export const useMapInitializer = ({
           draggable: isEditable,
         });
         setMarker(newMarker);
+
+        if (isEditable && onLocationSelect) {
+          newMarker.addListener('dragend', () => {
+            const position = newMarker.getPosition();
+            if (position) {
+              onLocationSelect({
+                lat: position.lat(),
+                lng: position.lng(),
+              });
+            }
+          });
+        }
       }
 
       if (isEditable && onLocationSelect) {
@@ -139,6 +133,17 @@ export const useMapInitializer = ({
               map: newMap,
               draggable: true,
             });
+            
+            newMarker.addListener('dragend', () => {
+              const position = newMarker.getPosition();
+              if (position) {
+                onLocationSelect({
+                  lat: position.lat(),
+                  lng: position.lng(),
+                });
+              }
+            });
+            
             setMarker(newMarker);
           }
           
@@ -148,13 +153,21 @@ export const useMapInitializer = ({
     } catch (err) {
       console.error('Error initializing map:', err);
       setLoadError("Failed to initialize map");
-      toast({
-        title: "Error",
-        description: "Failed to initialize map",
-        variant: "destructive",
-      });
     }
-  };
+  }, [location, isEditable, onLocationSelect, readonly, map, marker]);
+
+  // Cleanup function
+  useEffect(() => {
+    return () => {
+      if (marker) {
+        marker.setMap(null);
+      }
+      if (map) {
+        // @ts-ignore
+        map.unbindAll();
+      }
+    };
+  }, [map, marker]);
 
   return {
     apiKey,
