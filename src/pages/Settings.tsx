@@ -4,16 +4,33 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Moon, Sun, Monitor, RefreshCw, Trash2 } from "lucide-react";
+import { Moon, Sun, Monitor, RefreshCw, Trash2, KeyRound, LogOut } from "lucide-react";
 import MainNav from "@/components/NavigationMenu";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { userId } = useAuth();
+  const navigate = useNavigate();
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleResetAnalytics = async () => {
     if (!userId) return;
@@ -62,6 +79,75 @@ export default function Settings() {
       toast({
         title: "Error",
         description: "Failed to clear history. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Password updated successfully",
+      });
+      setIsChangingPassword(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      // Delete user data first
+      const { error: dataError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('user_id', userId);
+
+      if (dataError) throw dataError;
+
+      const { error: notesError } = await supabase
+        .from('notes')
+        .delete()
+        .eq('user_id', userId);
+
+      if (notesError) throw notesError;
+
+      // Sign out the user
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been successfully deleted",
+      });
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -132,7 +218,57 @@ export default function Settings() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Account Security</h2>
+          <div className="space-y-4">
+            <Dialog open={isChangingPassword} onOpenChange={setIsChangingPassword}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full sm:w-auto flex items-center gap-2">
+                  <KeyRound className="h-4 w-4" />
+                  Change Password
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Change Password</DialogTitle>
+                  <DialogDescription>
+                    Enter your new password below. Make sure it's secure!
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsChangingPassword(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handlePasswordChange}>
+                    Update Password
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </Card>
+
+        <Card className="p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Data Management</h2>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -163,6 +299,42 @@ export default function Settings() {
                 <Trash2 className="h-4 w-4" />
                 Clear History
               </Button>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4 text-destructive">Danger Zone</h2>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-muted-foreground">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Account
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete Account</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => {}}>Cancel</Button>
+                    <Button variant="destructive" onClick={handleDeleteAccount}>
+                      Delete Account
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </Card>
