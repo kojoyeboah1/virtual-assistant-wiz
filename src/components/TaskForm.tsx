@@ -108,11 +108,12 @@ export const TaskForm = ({ onSubmit, onDelete, initialValues = {}, mode = "creat
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Location (Optional)</label>
-        <div className="overflow-hidden rounded-lg">
+        <div className="overflow-hidden rounded-lg relative isolate">
           <LocationMap
             location={location}
             onLocationSelect={setLocation}
             className="h-[200px]"
+            isEditable={true}
           />
         </div>
       </div>

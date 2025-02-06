@@ -27,7 +27,6 @@ export const useMapInitializer = ({
   const markerRef = useRef<google.maps.Marker | null>(null);
   const scriptLoadedRef = useRef(false);
 
-  // Cache API key in session storage to prevent frequent requests
   useEffect(() => {
     const cachedKey = sessionStorage.getItem('google_maps_api_key');
     if (cachedKey) {
@@ -58,7 +57,6 @@ export const useMapInitializer = ({
     fetchApiKey();
   }, []);
 
-  // Load Google Maps script only once
   useEffect(() => {
     if (!apiKey || scriptLoadedRef.current || window.google || document.querySelector('script[src*="maps.googleapis.com"]')) {
       return;
@@ -93,28 +91,37 @@ export const useMapInitializer = ({
     if (!mapElement || !window.google || mapRef.current) return;
 
     try {
-      const defaultLocation = location || { lat: 0, lng: 0 };
+      const defaultLocation = location || { lat: 5.6037, lng: -0.1870 }; // Default to Accra, Ghana
       const newMap = new window.google.maps.Map(mapElement, {
         center: defaultLocation,
         zoom: 13,
         disableDefaultUI: readonly,
         draggable: !readonly,
-        gestureHandling: 'cooperative', // Better touch handling
-        scrollwheel: true, // Enable scroll zoom
+        gestureHandling: 'greedy', // This will help with mobile scrolling
+        scrollwheel: true,
         zoomControl: true,
-        mapTypeControl: false,
+        mapTypeControl: true,
         streetViewControl: false,
-        fullscreenControl: true
+        fullscreenControl: true,
+        styles: [
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }],
+          },
+        ],
       });
 
       mapRef.current = newMap;
 
-      // Add a listener to handle scroll containment
-      google.maps.event.addListenerOnce(newMap, 'idle', () => {
-        mapElement.addEventListener('touchstart', (e) => {
-          e.stopPropagation();
-        }, { passive: true });
-      });
+      // Prevent scroll propagation
+      mapElement.addEventListener('touchmove', (e) => {
+        e.stopPropagation();
+      }, { passive: false });
+
+      mapElement.addEventListener('wheel', (e) => {
+        e.stopPropagation();
+      }, { passive: false });
 
       if (location) {
         const newMarker = new window.google.maps.Marker({
@@ -175,7 +182,6 @@ export const useMapInitializer = ({
     }
   }, [location, isEditable, onLocationSelect, readonly]);
 
-  // Cleanup function
   useEffect(() => {
     return () => {
       if (markerRef.current) {

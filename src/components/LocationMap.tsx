@@ -30,7 +30,7 @@ const LocationMap = memo(({
     apiKey,
     initializeMap,
   } = useMapInitializer({
-    location,
+    location: location || { lat: 5.6037, lng: -0.1870 }, // Default to Accra, Ghana
     isEditable,
     onLocationSelect,
     readonly,
@@ -56,10 +56,12 @@ const LocationMap = memo(({
       className={`w-full h-[400px] rounded-lg shadow-md ${className || ''}`}
       style={{ 
         minHeight: '200px',
-        touchAction: 'pan-x pan-y', // Enable touch scrolling
-        WebkitOverflowScrolling: 'touch' // Improve iOS scrolling
+        touchAction: 'none', // Prevent touch events from propagating
+        WebkitOverflowScrolling: 'touch',
+        position: 'relative',
+        zIndex: 1
       }}
-      onClick={(e) => e.stopPropagation()} // Prevent click propagation
+      onClick={(e) => e.stopPropagation()}
     />
   );
 });
