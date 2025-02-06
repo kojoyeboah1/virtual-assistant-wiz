@@ -53,10 +53,9 @@ const LocationMap = memo(({
   return (
     <div 
       ref={mapRef}
-      className={`w-full h-[400px] rounded-lg shadow-md ${className || ''}`}
+      className={`w-full h-full rounded-lg shadow-md ${className || ''}`}
       style={{ 
-        minHeight: '200px',
-        touchAction: 'none', // Prevent touch events from propagating
+        touchAction: 'none',
         WebkitOverflowScrolling: 'touch',
         position: 'relative',
         zIndex: 1

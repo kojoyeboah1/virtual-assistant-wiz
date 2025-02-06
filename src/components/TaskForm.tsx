@@ -108,17 +108,16 @@ export const TaskForm = ({ onSubmit, onDelete, initialValues = {}, mode = "creat
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Location (Optional)</label>
-        <div className="overflow-hidden rounded-lg relative isolate">
+        <div className="h-[200px] overflow-hidden rounded-lg relative isolate">
           <LocationMap
             location={location}
             onLocationSelect={setLocation}
-            className="h-[200px]"
             isEditable={true}
           />
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 sticky bottom-0 bg-background py-4 mt-4">
         <Button type="submit" className="flex-1">
           Save Task
         </Button>
