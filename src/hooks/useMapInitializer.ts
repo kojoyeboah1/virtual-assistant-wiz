@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,9 +23,9 @@ export const useMapInitializer = ({
   const [apiKey, setApiKey] = useState<string>("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
-  const { toast } = useToast();
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
+  const scriptLoadedRef = useRef(false);
 
   // Cache API key in session storage to prevent frequent requests
   useEffect(() => {
@@ -60,7 +60,7 @@ export const useMapInitializer = ({
 
   // Load Google Maps script only once
   useEffect(() => {
-    if (!apiKey || window.google || document.querySelector('script[src*="maps.googleapis.com"]')) {
+    if (!apiKey || scriptLoadedRef.current || window.google || document.querySelector('script[src*="maps.googleapis.com"]')) {
       return;
     }
 
@@ -71,6 +71,7 @@ export const useMapInitializer = ({
     script.id = 'google-maps-script';
     
     script.onload = () => {
+      scriptLoadedRef.current = true;
       setIsLoaded(true);
     };
     
@@ -80,10 +81,16 @@ export const useMapInitializer = ({
     };
     
     document.head.appendChild(script);
+
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
   }, [apiKey]);
 
   const initializeMap = useCallback((mapElement: HTMLElement) => {
-    if (!mapElement || !window.google || map) return;
+    if (!mapElement || !window.google || mapRef.current) return;
 
     try {
       const defaultLocation = location || { lat: 0, lng: 0 };
@@ -95,7 +102,7 @@ export const useMapInitializer = ({
         gestureHandling: readonly ? 'none' : 'cooperative',
       });
 
-      setMap(newMap);
+      mapRef.current = newMap;
 
       if (location) {
         const newMarker = new window.google.maps.Marker({
@@ -103,7 +110,7 @@ export const useMapInitializer = ({
           map: newMap,
           draggable: isEditable,
         });
-        setMarker(newMarker);
+        markerRef.current = newMarker;
 
         if (isEditable && onLocationSelect) {
           newMarker.addListener('dragend', () => {
@@ -125,8 +132,8 @@ export const useMapInitializer = ({
             lng: e.latLng!.lng(),
           };
           
-          if (marker) {
-            marker.setPosition(newLocation);
+          if (markerRef.current) {
+            markerRef.current.setPosition(newLocation);
           } else {
             const newMarker = new window.google.maps.Marker({
               position: newLocation,
@@ -144,7 +151,7 @@ export const useMapInitializer = ({
               }
             });
             
-            setMarker(newMarker);
+            markerRef.current = newMarker;
           }
           
           onLocationSelect(newLocation);
@@ -154,20 +161,20 @@ export const useMapInitializer = ({
       console.error('Error initializing map:', err);
       setLoadError("Failed to initialize map");
     }
-  }, [location, isEditable, onLocationSelect, readonly, map, marker]);
+  }, [location, isEditable, onLocationSelect, readonly]);
 
   // Cleanup function
   useEffect(() => {
     return () => {
-      if (marker) {
-        marker.setMap(null);
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
       }
-      if (map) {
+      if (mapRef.current) {
         // @ts-ignore
-        map.unbindAll();
+        google.maps.event.clearInstanceListeners(mapRef.current);
       }
     };
-  }, [map, marker]);
+  }, []);
 
   return {
     apiKey,

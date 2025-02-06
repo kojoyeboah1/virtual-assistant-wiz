@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, memo } from "react";
 import { MapLoader } from "./map/MapLoader";
 import { MapError } from "./map/MapError";
 import { useMapInitializer } from "@/hooks/useMapInitializer";
@@ -16,7 +16,7 @@ interface LocationMapProps {
   readonly?: boolean;
 }
 
-export const LocationMap = ({ 
+const LocationMap = memo(({ 
   location, 
   onLocationSelect, 
   isEditable = false,
@@ -57,6 +57,8 @@ export const LocationMap = ({
       style={{ minHeight: '200px' }}
     />
   );
-};
+});
+
+LocationMap.displayName = 'LocationMap';
 
 export default LocationMap;
