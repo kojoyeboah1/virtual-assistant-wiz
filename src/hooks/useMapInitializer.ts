@@ -65,7 +65,7 @@ export const useMapInitializer = ({
     }
 
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
     script.id = 'google-maps-script';
@@ -99,10 +99,22 @@ export const useMapInitializer = ({
         zoom: 13,
         disableDefaultUI: readonly,
         draggable: !readonly,
-        gestureHandling: readonly ? 'none' : 'cooperative',
+        gestureHandling: 'cooperative', // Better touch handling
+        scrollwheel: true, // Enable scroll zoom
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true
       });
 
       mapRef.current = newMap;
+
+      // Add a listener to handle scroll containment
+      google.maps.event.addListenerOnce(newMap, 'idle', () => {
+        mapElement.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
+        }, { passive: true });
+      });
 
       if (location) {
         const newMarker = new window.google.maps.Marker({
@@ -170,7 +182,6 @@ export const useMapInitializer = ({
         markerRef.current.setMap(null);
       }
       if (mapRef.current) {
-        // @ts-ignore
         google.maps.event.clearInstanceListeners(mapRef.current);
       }
     };

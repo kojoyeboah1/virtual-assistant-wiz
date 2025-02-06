@@ -54,7 +54,12 @@ const LocationMap = memo(({
     <div 
       ref={mapRef}
       className={`w-full h-[400px] rounded-lg shadow-md ${className || ''}`}
-      style={{ minHeight: '200px' }}
+      style={{ 
+        minHeight: '200px',
+        touchAction: 'pan-x pan-y', // Enable touch scrolling
+        WebkitOverflowScrolling: 'touch' // Improve iOS scrolling
+      }}
+      onClick={(e) => e.stopPropagation()} // Prevent click propagation
     />
   );
 });
