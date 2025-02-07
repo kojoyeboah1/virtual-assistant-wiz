@@ -43,11 +43,19 @@ const LocationMap = memo(({
   }, [isLoaded, apiKey, initializeMap]);
 
   if (loadError) {
-    return <MapError error={loadError} />;
+    return (
+      <div className="h-full flex items-center justify-center">
+        <MapError error={loadError} />
+      </div>
+    );
   }
 
   if (!isLoaded || !apiKey) {
-    return <MapLoader />;
+    return (
+      <div className="h-full flex items-center justify-center">
+        <MapLoader />
+      </div>
+    );
   }
 
   return (
@@ -55,6 +63,7 @@ const LocationMap = memo(({
       ref={mapRef}
       className={`w-full h-full rounded-lg shadow-md ${className || ''}`}
       style={{ 
+        minHeight: '200px',
         touchAction: 'none',
         WebkitOverflowScrolling: 'touch',
         position: 'relative',

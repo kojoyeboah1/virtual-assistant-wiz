@@ -52,72 +52,74 @@ export const TaskForm = ({ onSubmit, onDelete, initialValues = {}, mode = "creat
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="title" className="text-sm font-medium">
-          Title
-        </label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="description" className="text-sm font-medium">
-          Description (Optional)
-        </label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Add a description (optional)"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="priority" className="text-sm font-medium">
-          Priority
-        </label>
-        <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select priority" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="dueDate" className="text-sm font-medium">
-          Due Date
-        </label>
-        <Input
-          id="dueDate"
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Location (Optional)</label>
-        <div className="h-[200px] overflow-hidden rounded-lg relative isolate">
-          <LocationMap
-            location={location}
-            onLocationSelect={setLocation}
-            isEditable={true}
+    <form onSubmit={handleSubmit} className="space-y-4 relative">
+      <div className="space-y-4 pb-20">
+        <div className="space-y-2">
+          <label htmlFor="title" className="text-sm font-medium">
+            Title
+          </label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
           />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="description" className="text-sm font-medium">
+            Description (Optional)
+          </label>
+          <Textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add a description (optional)"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="priority" className="text-sm font-medium">
+            Priority
+          </label>
+          <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select priority" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="dueDate" className="text-sm font-medium">
+            Due Date
+          </label>
+          <Input
+            id="dueDate"
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Location (Optional)</label>
+          <div className="h-[200px] overflow-hidden rounded-lg relative isolate">
+            <LocationMap
+              location={location}
+              onLocationSelect={setLocation}
+              isEditable={true}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-2 sticky bottom-0 bg-background py-4 mt-4">
+      <div className="flex gap-2 fixed bottom-0 left-0 right-0 bg-background p-4 border-t">
         <Button type="submit" className="flex-1">
           Save Task
         </Button>
